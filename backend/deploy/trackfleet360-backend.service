@@ -1,0 +1,16 @@
+[Unit]
+Description=TrackFleet360 Go Backend Service
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/var/www/trackfleet360/backend
+ExecStart=/var/www/trackfleet360/backend/trackfleet360-backend
+Restart=always
+RestartSec=5
+Environment=PORT=8080
+Environment=GIN_MODE=release
+
+[Install]
+WantedBy=multi-user.target
