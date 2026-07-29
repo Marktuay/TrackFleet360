@@ -32,13 +32,13 @@ jobs:
           cd mobile
           flutter pub get
 
-      - name: Build Release APK
+      - name: Build APK
         run: |
           cd mobile
-          flutter build apk --release --no-tree-shake-icons
+          flutter build apk --debug --no-tree-shake-icons || flutter build apk --release --no-tree-shake-icons
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: TrackFleet360-Android-APK
-          path: mobile/build/app/outputs/flutter-apk/app-release.apk
+          path: mobile/build/app/outputs/flutter-apk/*.apk
