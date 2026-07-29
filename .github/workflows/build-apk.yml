@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'mobile/**'
+      - '.github/workflows/build-apk.yml'
   workflow_dispatch:
 
 jobs:
@@ -12,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Java JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -23,13 +24,12 @@ jobs:
       - name: Set up Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.6'
           channel: 'stable'
 
       - name: Generate Android Native Platform Files
         run: |
           cd mobile
-          flutter create . --platforms=android --org com.trackfleet360
+          flutter create . --platforms=android --org com.trackfleet360 --project-name mobile
 
       - name: Install Flutter Dependencies
         run: |
