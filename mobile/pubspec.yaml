@@ -1,5 +1,5 @@
-name: trackfleet360_mobile
-description: "TrackFleet360 Mobile App for Drivers"
+name: mobile
+description: "TrackFleet360 Mobile App for Drivers and Subsidies in Nicaragua"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -9,20 +9,15 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
-  dio: ^5.7.0
-  flutter_secure_storage: ^9.2.2
-  geolocator: ^13.0.1
-  image_picker: ^1.1.2
-  intl: ^0.19.0
-  google_fonts: ^6.2.1
+  http: ^1.2.0
+  geolocator: ^11.0.0
+  image_picker: ^1.0.7
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
-  assets:
-    - assets/
