@@ -21,7 +21,8 @@ import {
   Bike,
   DollarSign,
   Map as MapIcon,
-  Navigation
+  Navigation,
+  Route
 } from 'lucide-react';
 import { apiFetch, Journey } from '@/lib/api';
 
@@ -30,7 +31,7 @@ const RouteMap = dynamic(() => import('@/components/map/RouteMap'), {
   ssr: false,
   loading: () => (
     <div className="w-full h-[320px] bg-slate-900 animate-pulse rounded-xl flex items-center justify-center text-slate-500 text-xs font-semibold">
-      Cargando Mapa de Ruta GPS (Nicaragua)...
+      Cargando Trazado de Carretera GPS (Nicaragua)...
     </div>
   ),
 });
@@ -46,12 +47,12 @@ export default function JourneysPage() {
       vehicle: { id: 1, plate_number: 'M-289-401', brand: 'Toyota', model: 'Hilux 4x4', year: 2022, vehicle_type: 'auto', subsidy_rate: 10, initial_km: 15000, current_km: 18450, status: 'active' },
       start_time: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
       end_time: new Date(Date.now() - 1 * 3600 * 1000).toISOString(),
-      start_lat: 12.1364,
-      start_lng: -86.2514,
-      start_address: 'Managua (Bodega Central - Carretera a Masaya)',
+      start_lat: 12.1430,
+      start_lng: -86.2080,
+      start_address: 'Managua (Carretera Norte - Mercado Mayoreo)',
       end_lat: 12.1978,
       end_lng: -86.0967,
-      end_address: 'Tipitapa (Zona Industrial / Parque Industrial)',
+      end_address: 'Tipitapa (Parque Industrial / Carretera NIC-1)',
       start_km: 18400,
       end_km: 18450,
       declared_dist_km: 50,
@@ -60,11 +61,17 @@ export default function JourneysPage() {
       subsidy_rate: 10,
       subsidy_amount: 500,
       status: 'flagged',
+      // Real Highway Coordinates following Nicaragua's Carretera Norte (NIC-1)
       points: [
-        { id: 1, journey_id: 1, latitude: 12.1364, longitude: -86.2514, speed: 0, recorded_at: new Date(Date.now() - 3 * 3600 * 1000).toISOString() },
-        { id: 2, journey_id: 1, latitude: 12.1550, longitude: -86.2100, speed: 55, recorded_at: new Date(Date.now() - 2.5 * 3600 * 1000).toISOString() },
-        { id: 3, journey_id: 1, latitude: 12.1750, longitude: -86.1500, speed: 65, recorded_at: new Date(Date.now() - 2 * 3600 * 1000).toISOString() },
-        { id: 4, journey_id: 1, latitude: 12.1978, longitude: -86.0967, speed: 0, recorded_at: new Date(Date.now() - 1 * 3600 * 1000).toISOString() },
+        { id: 1, journey_id: 1, latitude: 12.1430, longitude: -86.2080, speed: 0, recorded_at: new Date(Date.now() - 3 * 3600 * 1000).toISOString() },
+        { id: 2, journey_id: 1, latitude: 12.1445, longitude: -86.2000, speed: 45, recorded_at: new Date(Date.now() - 2.8 * 3600 * 1000).toISOString() },
+        { id: 3, journey_id: 1, latitude: 12.1470, longitude: -86.1800, speed: 55, recorded_at: new Date(Date.now() - 2.5 * 3600 * 1000).toISOString() },
+        { id: 4, journey_id: 1, latitude: 12.1485, longitude: -86.1680, speed: 60, recorded_at: new Date(Date.now() - 2.2 * 3600 * 1000).toISOString() },
+        { id: 5, journey_id: 1, latitude: 12.1550, longitude: -86.1500, speed: 62, recorded_at: new Date(Date.now() - 1.9 * 3600 * 1000).toISOString() },
+        { id: 6, journey_id: 1, latitude: 12.1650, longitude: -86.1300, speed: 58, recorded_at: new Date(Date.now() - 1.5 * 3600 * 1000).toISOString() },
+        { id: 7, journey_id: 1, latitude: 12.1800, longitude: -86.1150, speed: 50, recorded_at: new Date(Date.now() - 1.2 * 3600 * 1000).toISOString() },
+        { id: 8, journey_id: 1, latitude: 12.1930, longitude: -86.1000, speed: 40, recorded_at: new Date(Date.now() - 1.1 * 3600 * 1000).toISOString() },
+        { id: 9, journey_id: 1, latitude: 12.1978, longitude: -86.0967, speed: 0, recorded_at: new Date(Date.now() - 1 * 3600 * 1000).toISOString() },
       ],
       photos: [
         { id: 1, journey_id: 1, photo_type: 'end_odometer', url: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80', captured_at: new Date().toISOString() }
@@ -80,10 +87,10 @@ export default function JourneysPage() {
       end_time: new Date(Date.now() - 4 * 3600 * 1000).toISOString(),
       start_lat: 12.4379,
       start_lng: -86.8780,
-      start_address: 'León Centro (Sucursal Occidente)',
+      start_address: 'León Centro (Salida a Chinandega - Carretera NIC-12)',
       end_lat: 12.6294,
       end_lng: -87.1311,
-      end_address: 'Chinandega Centro (Distribuidora Norte)',
+      end_address: 'Chinandega Centro (Distribuidora Norte - NIC-12)',
       start_km: 8460,
       end_km: 8500,
       declared_dist_km: 40,
@@ -92,10 +99,15 @@ export default function JourneysPage() {
       subsidy_rate: 6,
       subsidy_amount: 240,
       status: 'approved',
+      // Real Highway Coordinates following Nicaragua's Carretera León - Chinandega (NIC-12 / NIC-26)
       points: [
         { id: 5, journey_id: 2, latitude: 12.4379, longitude: -86.8780, speed: 0, recorded_at: new Date(Date.now() - 6 * 3600 * 1000).toISOString() },
-        { id: 6, journey_id: 2, latitude: 12.5300, longitude: -87.0000, speed: 60, recorded_at: new Date(Date.now() - 5 * 3600 * 1000).toISOString() },
-        { id: 7, journey_id: 2, latitude: 12.6294, longitude: -87.1311, speed: 0, recorded_at: new Date(Date.now() - 4 * 3600 * 1000).toISOString() },
+        { id: 6, journey_id: 2, latitude: 12.4800, longitude: -86.8650, speed: 65, recorded_at: new Date(Date.now() - 5.7 * 3600 * 1000).toISOString() },
+        { id: 7, journey_id: 2, latitude: 12.5220, longitude: -86.8580, speed: 70, recorded_at: new Date(Date.now() - 5.4 * 3600 * 1000).toISOString() }, // Empalme Telica
+        { id: 8, journey_id: 2, latitude: 12.5450, longitude: -86.9790, speed: 68, recorded_at: new Date(Date.now() - 5.0 * 3600 * 1000).toISOString() }, // Posoltega
+        { id: 9, journey_id: 2, latitude: 12.5730, longitude: -87.0270, speed: 65, recorded_at: new Date(Date.now() - 4.5 * 3600 * 1000).toISOString() }, // Chichigalpa
+        { id: 10, journey_id: 2, latitude: 12.6000, longitude: -87.0800, speed: 50, recorded_at: new Date(Date.now() - 4.2 * 3600 * 1000).toISOString() },
+        { id: 11, journey_id: 2, latitude: 12.6294, longitude: -87.1311, speed: 0, recorded_at: new Date(Date.now() - 4.0 * 3600 * 1000).toISOString() },
       ]
     }
   ]);
@@ -166,10 +178,10 @@ export default function JourneysPage() {
           {/* Header */}
           <div>
             <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-              Monitoreo y Validación de Recorridos (Nicaragua)
+              Monitoreo y Validación de Recorridos (Carreteras Nicaragua)
             </h1>
             <p className="text-slate-400 text-sm mt-1">
-              Auditoría objetiva de trayectos, trazado en mapa GPS en Nicaragua y comprobación de odómetro para subsidio
+              Auditoría objetiva de trayectos, trazado GPS sobre carreteras principales de Nicaragua y comprobación de odómetro
             </p>
           </div>
 
@@ -181,7 +193,7 @@ export default function JourneysPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar por placa, conductor u origen en Nicaragua..."
+                placeholder="Buscar por placa, conductor o carretera en Nicaragua..."
                 className="w-full bg-slate-900/80 border border-slate-700/80 rounded-lg pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
               />
             </div>
@@ -211,7 +223,7 @@ export default function JourneysPage() {
                     <th className="px-6 py-3.5">ID / Fecha</th>
                     <th className="px-6 py-3.5">Conductor</th>
                     <th className="px-6 py-3.5">Vehículo</th>
-                    <th className="px-6 py-3.5">Trayecto (Origen → Destino en Nicaragua)</th>
+                    <th className="px-6 py-3.5">Trayecto por Carretera (Nicaragua)</th>
                     <th className="px-6 py-3.5">KM Decl.</th>
                     <th className="px-6 py-3.5">KM GPS</th>
                     <th className="px-6 py-3.5">Diferencia</th>
@@ -244,8 +256,10 @@ export default function JourneysPage() {
                             <div className="text-[11px] text-slate-400 mt-0.5">{j.vehicle?.brand} {j.vehicle?.model}</div>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="text-xs text-white font-medium">{j.start_address}</div>
-                            <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
+                            <div className="text-xs text-white font-medium flex items-center gap-1">
+                              <Route className="w-3.5 h-3.5 text-sky-400 shrink-0" /> {j.start_address}
+                            </div>
+                            <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5 pl-4">
                               → {j.end_address || 'En Ruta'}
                             </div>
                           </td>
@@ -294,7 +308,7 @@ export default function JourneysPage() {
                                     : 'bg-slate-800 hover:bg-slate-700 text-sky-400 border-slate-700'
                                 }`}
                               >
-                                <MapIcon className="w-3.5 h-3.5" /> {isMapOpen ? 'Ocultar Mapa' : 'Ver Mapa'}
+                                <MapIcon className="w-3.5 h-3.5" /> {isMapOpen ? 'Ocultar Mapa' : 'Ver Carretera'}
                               </button>
 
                               {/* Audit Modal Button */}
@@ -318,7 +332,7 @@ export default function JourneysPage() {
                               <div className="space-y-2">
                                 <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
                                   <span className="flex items-center gap-2 text-sky-400 font-bold">
-                                    <Navigation className="w-4 h-4" /> Trazado de Ruta GPS Real en Nicaragua (#REC-{j.id})
+                                    <Navigation className="w-4 h-4" /> Trazado de Carretera GPS Real en Nicaragua (#REC-{j.id})
                                   </span>
                                   <span>Conductor: {j.driver?.user?.full_name} | Placa: {j.vehicle?.plate_number}</span>
                                 </div>
@@ -330,7 +344,7 @@ export default function JourneysPage() {
                                   endLng={j.end_lng}
                                   startAddress={j.start_address}
                                   endAddress={j.end_address}
-                                  height="300px"
+                                  height="320px"
                                 />
                               </div>
                             </td>
@@ -356,10 +370,10 @@ export default function JourneysPage() {
                     </div>
                     <div>
                       <h3 className="font-bold text-white text-lg">
-                        Auditoría y Validación de Recorrido en Nicaragua #REC-{auditingJourney.id}
+                        Auditoría y Validación de Carretera en Nicaragua #REC-{auditingJourney.id}
                       </h3>
                       <p className="text-xs text-slate-400">
-                        Evaluación de trazado GPS en Nicaragua, odómetro de vehículo y cálculo de subsidio (C$)
+                        Evaluación de trazado por carreteras de Nicaragua, odómetro de vehículo y cálculo de subsidio (C$)
                       </p>
                     </div>
                   </div>
@@ -448,9 +462,9 @@ export default function JourneysPage() {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
                         <span className="text-sky-400 font-bold flex items-center gap-1.5">
-                          <MapIcon className="w-4 h-4" /> Mapa de Trazado de Ruta GPS Real (Nicaragua)
+                          <MapIcon className="w-4 h-4" /> Mapa de Trazado por Carretera GPS (Nicaragua)
                         </span>
-                        <span className="text-[11px] text-slate-500">{auditingJourney.points?.length || 0} Puntos GPS</span>
+                        <span className="text-[11px] text-slate-500">{auditingJourney.points?.length || 0} Puntos de Ruta</span>
                       </div>
                       <RouteMap
                         points={auditingJourney.points}
