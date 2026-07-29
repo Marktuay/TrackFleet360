@@ -26,6 +26,11 @@ jobs:
           flutter-version: '3.19.6'
           channel: 'stable'
 
+      - name: Generate Android Native Platform Files
+        run: |
+          cd mobile
+          flutter create . --platforms=android --org com.trackfleet360
+
       - name: Install Flutter Dependencies
         run: |
           cd mobile
