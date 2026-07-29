@@ -4,13 +4,17 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/models.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://10.0.2.2:8080/api/v1'; // Android emulator localhost mapping or server URL
+  // 192.168.6.123 is the local Mac IP address for physical phones on the same Wi-Fi
+  // 8085 is the active Go backend API port
+  static const String baseUrl = 'http://192.168.6.123:8085/api/v1';
   final Dio _dio = Dio();
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   ApiService() {
     _dio.options.baseUrl = baseUrl;
     _dio.options.headers = {'Content-Type': 'application/json'};
+    _dio.options.connectTimeout = const Duration(seconds: 5);
+    _dio.options.receiveTimeout = const Duration(seconds: 5);
   }
 
   Future<String?> getToken() async {
@@ -39,14 +43,14 @@ class ApiService {
       await saveToken(token);
       return response.data;
     } catch (e) {
-      // Offline / Demo fallback
+      // Offline / Demo fallback if local network backend is unreachable
       const demoToken = "demo_driver_jwt_token";
       await saveToken(demoToken);
       return {
         'token': demoToken,
         'user': {
           'id': 3,
-          'email': email,
+          'email': email.isNotEmpty ? email : 'conductor@trackfleet360.com',
           'full_name': 'Juan Pérez (Conductor)',
           'role': 'driver'
         }
