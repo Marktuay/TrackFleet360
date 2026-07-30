@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import 'active_journey_screen.dart';
@@ -12,10 +14,12 @@ class VehicleSelectScreen extends StatefulWidget {
 
 class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
   final ApiService _apiService = ApiService();
+  final ImagePicker _picker = ImagePicker();
   List<Vehicle> _vehicles = [];
   bool _isLoading = true;
   Vehicle? _selectedVehicle;
   final _startKmController = TextEditingController();
+  XFile? _odometerPhoto;
 
   @override
   void initState() {
@@ -35,8 +39,73 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
     });
   }
 
+  Future<void> _takeOdometerPhoto() async {
+    try {
+      final XFile? photo = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 85,
+        maxWidth: 1200,
+      );
+      if (photo != null) {
+        setState(() {
+          _odometerPhoto = photo;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al acceder a la cámara: $e'),
+            backgroundColor: const Color(0xFFE11D48),
+          ),
+        );
+      }
+    }
+  }
+
   void _startJourney() async {
     if (_selectedVehicle == null) return;
+
+    // STRICT CHECK: Photo of odometer is mandatory to start journey!
+    if (_odometerPhoto == null) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: const Color(0xFF1E293B),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.camera_alt_rounded, color: Color(0xFFF43F5E)),
+              SizedBox(width: 8),
+              Text('Fotografía Requerida', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            ],
+          ),
+          content: const Text(
+            'Es OBLIGATORIO tomar la foto del odómetro del vehículo antes de iniciar el recorrido.\n\nPor favor active la cámara para capturar la evidencia visual.',
+            style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 13),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar', style: TextStyle(color: Color(0xFF94A3B8))),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(ctx);
+                _takeOdometerPhoto();
+              },
+              icon: const Icon(Icons.camera_alt, size: 18, color: Colors.white),
+              label: const Text('Tomar Foto Ahora', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0284C7),
+              ),
+            ),
+          ],
+        ),
+      );
+      return; // DO NOT PROCEED!
+    }
+
     final km = double.tryParse(_startKmController.text) ?? _selectedVehicle!.currentKm;
 
     final journey = await _apiService.startJourney(
@@ -88,7 +157,7 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
                     'Seleccione el vehículo asignado para el recorrido:',
                     style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   Expanded(
                     child: ListView.builder(
                       itemCount: _vehicles.length,
@@ -121,7 +190,11 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
                                     color: const Color(0xFF0F172A),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  child: const Icon(Icons.directions_car, color: Color(0xFF38BDF8), size: 28),
+                                  child: Icon(
+                                    v.brand.toLowerCase().contains('yamaha') ? Icons.two_wheeler : Icons.directions_car,
+                                    color: const Color(0xFF38BDF8),
+                                    size: 28,
+                                  ),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
@@ -153,12 +226,105 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
+                  
+                  // Mandatory Camera Photo Card Section
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B),
+                      border: Border.all(
+                        color: _odometerPhoto != null ? const Color(0xFF10B981) : const Color(0xFFF43F5E).withOpacity(0.6),
+                        width: 1.5,
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.between,
+                          children: [
+                            const Text(
+                              'Foto Odómetro Inicial',
+                              style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.horizontal(8, py: 3),
+                              decoration: BoxDecoration(
+                                color: _odometerPhoto != null ? const Color(0xFF10B981).withOpacity(0.2) : const Color(0xFFF43F5E).withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                _odometerPhoto != null ? '✓ TOMADA' : '* REQUERIDO',
+                                style: TextStyle(
+                                  color: _odometerPhoto != null ? const Color(0xFF34D399) : const Color(0xFFFB7185),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        if (_odometerPhoto != null)
+                          Row(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.file(
+                                  File(_odometerPhoto!.path),
+                                  width: 56,
+                                  height: 56,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Evidencia Capturada', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
+                                    Text('Imagen lista para auditoría de odómetro', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11)),
+                                  ],
+                                ),
+                              ),
+                              OutlinedButton.icon(
+                                onPressed: _takeOdometerPhoto,
+                                icon: const Icon(Icons.refresh, size: 16, color: Color(0xFF38BDF8)),
+                                label: const Text('Repetir', style: TextStyle(color: Color(0xFF38BDF8), fontSize: 12)),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: Color(0xFF38BDF8)),
+                                  padding: const EdgeInsets.horizontal(10, py: 6),
+                                ),
+                              ),
+                            ],
+                          )
+                        else
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _takeOdometerPhoto,
+                              icon: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 20),
+                              label: const Text('Activar Cámara y Tomar Foto', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF0284C7),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                padding: const EdgeInsets.vertical(12),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
                   const Text(
                     'Kilometraje Inicial del Odómetro (KM):',
-                    style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   TextField(
                     controller: _startKmController,
                     keyboardType: TextInputType.number,
@@ -171,23 +337,24 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   SizedBox(
                     width: double.infinity,
-                    height: 52,
+                    height: 50,
                     child: ElevatedButton.icon(
                       onPressed: _startJourney,
                       icon: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 24),
                       label: const Text('Iniciar Recorrido', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF10B981),
+                        backgroundColor: _odometerPhoto != null ? const Color(0xFF10B981) : const Color(0xFF475569),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   Center(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
