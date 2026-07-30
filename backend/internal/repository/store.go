@@ -149,7 +149,19 @@ func (m *MemoryStore) seedData() {
 		UpdatedAt:    time.Now(),
 	}
 	m.users[5] = auditorUser
-	m.nextUserID = 6
+
+	jorgeUser := &models.User{
+		ID:           6,
+		Email:        "jorge.mayorga@newcenturyni.com",
+		PasswordHash: hashPassword("driver123"),
+		FullName:     "Jorge Mayorga",
+		Role:         models.RoleDriver,
+		Active:       true,
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
+	}
+	m.users[6] = jorgeUser
+	m.nextUserID = 7
 
 	driver1 := &models.Driver{
 		ID:             1,
@@ -204,7 +216,25 @@ func (m *MemoryStore) seedData() {
 		UpdatedAt:      time.Now(),
 	}
 	m.drivers[3] = driver3
-	m.nextDriverID = 4
+
+	driver4 := &models.Driver{
+		ID:             4,
+		UserID:         6,
+		User:           jorgeUser,
+		LicenseNumber:  "LIC-882011",
+		Phone:          "+505 8888-7777",
+		Company:        "Newcentury NI",
+		Position:       "Conductor Operativo",
+		VehicleType:    "auto",
+		VehicleSubtype: "sedan",
+		FuelType:       "gasolina",
+		PlateNumber:    "M-58392",
+		Status:         "active",
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
+	m.drivers[4] = driver4
+	m.nextDriverID = 5
 
 	v1 := &models.Vehicle{
 		ID:          1,
@@ -409,6 +439,7 @@ func (m *MemoryStore) CreateUser(ctx context.Context, u *models.User, password s
 			VehicleType:    req.VehicleType,
 			VehicleSubtype: req.VehicleSubtype,
 			FuelType:       req.FuelType,
+			PlateNumber:    req.PlateNumber,
 			Status:         "active",
 			CreatedAt:      time.Now(),
 			UpdatedAt:      time.Now(),
