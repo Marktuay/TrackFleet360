@@ -137,32 +137,74 @@ func (m *MemoryStore) seedData() {
 		UpdatedAt:    time.Now(),
 	}
 	m.users[4] = driverUser2
-	m.nextUserID = 5
+
+	auditorUser := &models.User{
+		ID:           5,
+		Email:        "auditor-general@newcenturyni.com",
+		PasswordHash: hashPassword("driver123"),
+		FullName:     "Auditor General",
+		Role:         models.RoleDriver,
+		Active:       true,
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
+	}
+	m.users[5] = auditorUser
+	m.nextUserID = 6
 
 	driver1 := &models.Driver{
-		ID:            1,
-		UserID:        3,
-		User:          driverUser1,
-		LicenseNumber: "LIC-884920",
-		Phone:         "+506 8888-1111",
-		Status:        "active",
-		CreatedAt:     time.Now(),
-		UpdatedAt:     time.Now(),
+		ID:             1,
+		UserID:         3,
+		User:           driverUser1,
+		LicenseNumber:  "LIC-884920",
+		Phone:          "+506 8888-1111",
+		Company:        "Newcentury NI",
+		Position:       "Conductor Operativo",
+		VehicleType:    "auto",
+		VehicleSubtype: "sedan",
+		FuelType:       "gasolina",
+		PlateNumber:    "M-58392",
+		Status:         "active",
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
 	}
 	m.drivers[1] = driver1
 
 	driver2 := &models.Driver{
-		ID:            2,
-		UserID:        4,
-		User:          driverUser2,
-		LicenseNumber: "LIC-993021",
-		Phone:         "+506 8888-2222",
-		Status:        "active",
-		CreatedAt:     time.Now(),
-		UpdatedAt:     time.Now(),
+		ID:             2,
+		UserID:         4,
+		User:           driverUser2,
+		LicenseNumber:  "LIC-993021",
+		Phone:          "+506 8888-2222",
+		Company:        "TrackFleet360",
+		Position:       "Conductor Reparto",
+		VehicleType:    "moto",
+		VehicleSubtype: "moto",
+		FuelType:       "gasolina",
+		PlateNumber:    "M-99102",
+		Status:         "active",
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
 	}
 	m.drivers[2] = driver2
-	m.nextDriverID = 3
+
+	driver3 := &models.Driver{
+		ID:             3,
+		UserID:         5,
+		User:           auditorUser,
+		LicenseNumber:  "LIC-772019",
+		Phone:          "+505 8888-9999",
+		Company:        "Newcentury NI",
+		Position:       "Auditor General",
+		VehicleType:    "auto",
+		VehicleSubtype: "suv",
+		FuelType:       "gasolina",
+		PlateNumber:    "M-10920",
+		Status:         "active",
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
+	m.drivers[3] = driver3
+	m.nextDriverID = 4
 
 	v1 := &models.Vehicle{
 		ID:          1,

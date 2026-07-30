@@ -33,6 +33,7 @@ export default function VehiclesPage() {
   const [drivers, setDrivers] = useState<Driver[]>([
     { id: 1, user_id: 3, license_number: 'LIC-884920', phone: '+506 8888-1111', company: 'Newcentury NI', position: 'Conductor Operativo', vehicle_type: 'auto', vehicle_subtype: 'sedan', fuel_type: 'gasolina', plate_number: 'M-58392', status: 'active', user: { id: 3, email: 'conductor1@trackfleet360.com', full_name: 'Juan Pérez', role: 'driver', active: true } },
     { id: 2, user_id: 4, license_number: 'LIC-993021', phone: '+506 8888-2222', company: 'TrackFleet360', position: 'Conductor Reparto', vehicle_type: 'moto', vehicle_subtype: 'moto', fuel_type: 'gasolina', plate_number: 'M-99102', status: 'active', user: { id: 4, email: 'conductor2@trackfleet360.com', full_name: 'Roberto Gómez', role: 'driver', active: true } },
+    { id: 3, user_id: 5, license_number: 'LIC-772019', phone: '+505 8888-9999', company: 'Newcentury NI', position: 'Auditor General', vehicle_type: 'auto', vehicle_subtype: 'suv', fuel_type: 'gasolina', plate_number: 'M-10920', status: 'active', user: { id: 5, email: 'auditor-general@newcenturyni.com', full_name: 'Auditor General', role: 'driver', active: true } },
   ]);
 
   const [searchQuery, setSearchQuery] = useState('');
