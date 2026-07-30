@@ -4,9 +4,9 @@ After=network.target postgresql.service
 
 [Service]
 Type=simple
-User=ubuntu
-WorkingDirectory=/var/www/trackfleet360/backend
-ExecStart=/var/www/trackfleet360/backend/trackfleet360-backend
+User=informatica
+WorkingDirectory=/home/informatica/TrackFleet360/backend
+ExecStart=/home/informatica/TrackFleet360/backend/trackfleet360-backend
 Restart=always
 RestartSec=5
 Environment=PORT=8085

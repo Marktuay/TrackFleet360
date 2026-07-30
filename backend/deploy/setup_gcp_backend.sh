@@ -25,24 +25,24 @@ if ! command -v go &> /dev/null; then
 fi
 
 # 3. Crear estructura de directorios
-sudo mkdir -p /var/www/trackfleet360/backend/uploads
-sudo chown -R $USER:$USER /var/www/trackfleet360
+TARGET_DIR="${HOME}/TrackFleet360/backend"
+mkdir -p "${TARGET_DIR}/uploads"
 
 # 4. Copiar y compilar la aplicación Go
 echo "🔨 Compilando binario Go de producción..."
-cd /var/www/trackfleet360/backend
-go build -o trackfleet360-backend ./cmd/api
+cd "${TARGET_DIR}"
+/usr/local/go/bin/go build -o trackfleet360-backend ./cmd/api
 
 # 5. Configurar servicio Systemd
 echo "⚙️ Configurando servicio Systemd..."
-sudo cp /var/www/trackfleet360/backend/deploy/trackfleet360-backend.service /etc/systemd/system/
+sudo cp "${TARGET_DIR}/deploy/trackfleet360-backend.service" /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable trackfleet360-backend
 sudo systemctl restart trackfleet360-backend
 
 # 6. Configurar Nginx
 echo "🌐 Configurando Nginx Reverse Proxy..."
-sudo cp /var/www/trackfleet360/backend/deploy/nginx.conf /etc/nginx/sites-available/trackfleet360-backend
+sudo cp "${TARGET_DIR}/deploy/nginx.conf" /etc/nginx/sites-available/trackfleet360-backend
 sudo ln -sf /etc/nginx/sites-available/trackfleet360-backend /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t

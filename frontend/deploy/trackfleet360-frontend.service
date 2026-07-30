@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=ubuntu
-WorkingDirectory=/var/www/trackfleet360/frontend
+User=informatica
+WorkingDirectory=/home/informatica/TrackFleet360/frontend
 ExecStart=/usr/bin/npx next start -p 3005
 Restart=always
 RestartSec=5

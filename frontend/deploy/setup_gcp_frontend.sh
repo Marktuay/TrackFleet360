@@ -21,25 +21,25 @@ if ! command -v node &> /dev/null; then
 fi
 
 # 3. Crear estructura de directorios
-sudo mkdir -p /var/www/trackfleet360/frontend
-sudo chown -R $USER:$USER /var/www/trackfleet360
+TARGET_DIR="${HOME}/TrackFleet360/frontend"
+mkdir -p "${TARGET_DIR}"
 
 # 4. Instalar dependencias de Node.js y compilar la app Next.js
 echo "🔨 Instalando npm packages y compilando Next.js..."
-cd /var/www/trackfleet360/frontend
+cd "${TARGET_DIR}"
 npm install
 NEXT_PUBLIC_API_URL=https://trackfleet360.newcenturyni.com/api/v1 npm run build
 
 # 5. Configurar servicio Systemd
 echo "⚙️ Configurando servicio Systemd..."
-sudo cp /var/www/trackfleet360/frontend/deploy/trackfleet360-frontend.service /etc/systemd/system/
+sudo cp "${TARGET_DIR}/deploy/trackfleet360-frontend.service" /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable trackfleet360-frontend
 sudo systemctl restart trackfleet360-frontend
 
 # 6. Configurar Nginx
 echo "🌐 Configurando Nginx Reverse Proxy..."
-sudo cp /var/www/trackfleet360/frontend/deploy/nginx.conf /etc/nginx/sites-available/trackfleet360-frontend
+sudo cp "${TARGET_DIR}/deploy/nginx.conf" /etc/nginx/sites-available/trackfleet360-frontend
 sudo ln -sf /etc/nginx/sites-available/trackfleet360-frontend /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t
