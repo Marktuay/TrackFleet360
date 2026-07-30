@@ -33,6 +33,7 @@ export interface Driver {
   vehicle_type?: string;
   vehicle_subtype?: string;
   fuel_type?: string;
+  plate_number?: string;
   status: string;
 }
 
