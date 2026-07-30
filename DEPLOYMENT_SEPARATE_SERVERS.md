@@ -1,107 +1,109 @@
-# 🌐 GUÍA DE DESPLIEGUE EN SERVIDORES SEPARADOS (BACKEND & FRONTEND)
+# 🌐 GUÍA DE DESPLIEGUE EN MÁQUINAS VIRTUALES GOOGLE CLOUD (VMs)
 
-Esta guía explica paso a paso cómo desplegar **TrackFleet360** cuando el **Backend (Go API)** y el **Frontend (Next.js Web)** residen en dos servidores/máquinas virtuales independientes (Ej: Servidor A y Servidor B).
-
----
-
-## 📐 Esquema de Arquitectura
-
-```
-  [ NAVEGADOR DEL USUARIO ]
-       │              │
-       │ (HTTPS)      │ (HTTPS)
-       ▼              ▼
- ┌──────────────┐   ┌──────────────┐
- │ SERVIDOR B   │   │ SERVIDOR A   │
- │ Frontend Web │   │ Backend API  │
- │ (Next.js)    │   │ (Go API)     │
- │ Puerto: 3005 │   │ Puerto: 8085 │
- └──────────────┘   └──────────────┘
-```
-
-* **Servidor A (Backend Go API)**: `https://api.trackfleet360.com` (o IP `192.168.1.100:8085`)
-* **Servidor B (Frontend Next.js)**: `https://app.trackfleet360.com` (o IP `192.168.1.200:3005`)
+Esta guía explica paso a paso cómo desplegar **TrackFleet360** en dos Máquinas Virtuales (VMs) independientes en **Google Cloud Compute Engine** bajo el dominio `newcenturyni.com` usando certificados SSL directos con Certbot (Let's Encrypt).
 
 ---
 
-## 🛠️ PASO 1: Configurar CORS en el Backend (Servidor A)
+## 📐 Esquema de Arquitectura de Producción
 
-Al estar en IP/Dominios distintos, el navegador exige cabeceras **CORS (Cross-Origin Resource Sharing)**.
-
-En `backend/cmd/api/main.go`, el middleware de Gin permite la comunicación entre orígenes:
-
-```go
-router.Use(func(c *gin.Context) {
-    c.Writer.Header().Set("Access-Control-Allow-Origin", "*") // O el dominio 'https://app.trackfleet360.com'
-    c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
-    c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-    
-    if c.Request.Method == "OPTIONS" {
-        c.AbortWithStatus(204)
-        return
-    }
-    c.Next()
-})
+```
+                       [ NAVEGADOR / APP MÓVIL ]
+                            │              │
+                   (HTTPS)  │              │  (HTTPS)
+                            ▼              ▼
+           ┌──────────────────┐          ┌───────────────────────────┐
+           │ GCP VM: FRONTEND │          │ GCP VM: BACKEND           │
+           │ app.newcenturyni.com        │ trackfleet360.newcenturyni.com
+           │ Puerto: 3005     │          │ Puerto: 8085              │
+           └──────────────────┘          └───────────────────────────┘
 ```
 
-### Compilar y Ejecutar en Servidor A (Backend):
+* **Servidor Backend (Go API)**: `https://trackfleet360.newcenturyni.com` (Puerto interno `8085`)
+* **Servidor Frontend (Next.js)**: `https://app.newcenturyni.com` (Puerto interno `3005`)
+
+---
+
+## 🛠️ PASO 1: Registros DNS y Cortafuegos GCP
+
+1. **Registros A en el Proveedor de DNS**:
+   * `trackfleet360.newcenturyni.com` ➔ IP Pública de la VM Backend de GCP.
+   * `app.newcenturyni.com` ➔ IP Pública de la VM Frontend de GCP.
+
+2. **Google Cloud Firewall Rules**:
+   * Permitir tráfico en los puertos `80` (HTTP) y `443` (HTTPS) en ambas instancias VM.
+
+---
+
+## 🛠️ PASO 2: Despliegue del Backend (`trackfleet360.newcenturyni.com`)
+
+En la VM del Backend (Ubuntu 22.04 LTS):
+
 ```bash
-# Compilar binario linux
-GOOS=linux GOARCH=amd64 go build -o trackfleet360-backend ./cmd/api
+# Clonar repositorio o copiar archivos del proyecto
+cd /var/www/trackfleet360/backend
 
-# Ejecutar con variable de puerto
-PORT=8085 ./trackfleet360-backend
+# Ejecutar el script automatizado de configuración
+bash deploy/setup_gcp_backend.sh
 ```
 
-### Configuración Nginx en Servidor A (`/etc/nginx/sites-available/api.conf`):
+### Configuración Nginx (`/etc/nginx/sites-available/trackfleet360-backend`):
 ```nginx
 server {
     listen 80;
-    server_name api.trackfleet360.com;
+    server_name trackfleet360.newcenturyni.com;
 
     location / {
         proxy_pass http://127.0.0.1:8085;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
         proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /uploads/ {
+        alias /var/www/trackfleet360/backend/uploads/;
+        expires 30d;
+        add_header Cache-Control "public, no-transform";
     }
 }
 ```
 
 ---
 
-## 🛠️ PASO 2: Configurar la URL de la API en el Frontend (Servidor B)
+## 🛠️ PASO 3: Despliegue del Frontend (`app.newcenturyni.com`)
 
-En el Servidor B donde se ejecuta Next.js, se configura la variable de entorno que apunta a la dirección del **Servidor A**.
+En la VM del Frontend (Ubuntu 22.04 LTS):
 
-### Crear o editar `frontend/.env.production`:
-```env
-NEXT_PUBLIC_API_URL=https://api.trackfleet360.com/api/v1
-```
-*(Si no usas dominio y usas la IP directamente: `NEXT_PUBLIC_API_URL=http://192.168.1.100:8085/api/v1`)*.
-
-### Compilar y Ejecutar en Servidor B (Frontend):
 ```bash
-cd frontend
+# Clonar repositorio o copiar archivos del proyecto
+cd /var/www/trackfleet360/frontend
 
-# Instalar dependencias y compilar
-npm install
-npm run build
-
-# Iniciar servidor web de producción en puerto 3005
-npx next start -p 3005
+# Ejecutar el script automatizado de configuración
+bash deploy/setup_gcp_frontend.sh
 ```
 
-### Configuración Nginx en Servidor B (`/etc/nginx/sites-available/frontend.conf`):
+### Variable de Entorno (`frontend/.env.production`):
+```env
+NEXT_PUBLIC_API_URL=https://trackfleet360.newcenturyni.com/api/v1
+```
+
+### Configuración Nginx (`/etc/nginx/sites-available/trackfleet360-frontend`):
 ```nginx
 server {
     listen 80;
-    server_name app.trackfleet360.com;
+    server_name app.newcenturyni.com;
 
     location / {
         proxy_pass http://127.0.0.1:3005;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
         proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
@@ -111,81 +113,35 @@ server {
 
 ---
 
-## 🔒 PASO 3: Certificados SSL Gratuitos con Certbot (HTTPS)
+## 🔒 PASO 4: Certificados SSL Gratuitos con Certbot (HTTPS)
 
-Para asegurar las comunicaciones entre ambos servidores:
+El script de instalación ejecuta Certbot automáticamente. Si necesitas renovar o generar manualmente:
 
-### En Servidor A (Backend):
 ```bash
-sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d api.trackfleet360.com
-```
+# En VM Backend:
+sudo certbot --nginx -d trackfleet360.newcenturyni.com
 
-### En Servidor B (Frontend):
-```bash
-sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d app.trackfleet360.com
+# En VM Frontend:
+sudo certbot --nginx -d app.newcenturyni.com
 ```
 
 ---
 
-## ⚙️ PASO 4: Servicios Automáticos (Systemd)
-
-Para que los servicios se inicien automáticamente si el servidor se reinicia:
-
-### En Servidor A (`/etc/systemd/system/trackfleet360-backend.service`):
-```ini
-[Unit]
-Description=TrackFleet360 Go Backend Service
-After=network.target
-
-[Service]
-Type=simple
-User=root
-WorkingDirectory=/var/www/trackfleet360/backend
-ExecStart=/var/www/trackfleet360/backend/trackfleet360-backend
-Restart=always
-Environment=PORT=8085
-
-[Install]
-WantedBy=multi-user.target
-```
+## ⚙️ PASO 5: Verificación de Servicios Systemd
 
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable trackfleet360-backend
-sudo systemctl start trackfleet360-backend
-```
+# Estado del Backend
+sudo systemctl status trackfleet360-backend
 
-### En Servidor B (`/etc/systemd/system/trackfleet360-frontend.service`):
-```ini
-[Unit]
-Description=TrackFleet360 Next.js Frontend Service
-After=network.target
-
-[Service]
-Type=simple
-User=root
-WorkingDirectory=/var/www/trackfleet360/frontend
-ExecStart=/usr/bin/npx next start -p 3005
-Restart=always
-Environment=NODE_ENV=production
-Environment=PORT=3005
-
-[Install]
-WantedBy=multi-user.target
-```
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable trackfleet360-frontend
-sudo systemctl start trackfleet360-frontend
+# Estado del Frontend
+sudo systemctl status trackfleet360-frontend
 ```
 
 ---
 
-## 📋 Resumen de Puntos Clave para Servidores Separados
+## 📋 Resumen de Puntos Clave
 
-1. **La variable `NEXT_PUBLIC_API_URL`**: Debe apuntar a la IP o Dominio público del **Servidor A (Backend)**.
-2. **CORS en Go**: Debe estar activado en el Backend para aceptar peticiones que provengan de la IP/Dominio del **Servidor B (Frontend)**.
-3. **Manejo de HTTPS**: Si activas HTTPS en el Frontend, el Backend **también debe tener HTTPS**, de lo contrario el navegador bloqueará la conexión por *"Mixed Content Security Violation"*.
+1. **Variable `NEXT_PUBLIC_API_URL`**: Debe apuntar a `https://trackfleet360.newcenturyni.com/api/v1`.
+2. **CORS en Go**: Permite la comunicación entre `app.newcenturyni.com` y `trackfleet360.newcenturyni.com`.
+3. **App Móvil Flutter**: Conectada a `https://trackfleet360.newcenturyni.com/api/v1` en `mobile/lib/services/api_service.dart`.
+

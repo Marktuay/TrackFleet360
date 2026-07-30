@@ -17,14 +17,14 @@ Documento oficial de arquitectura, reglas de negocio, alcances completados, conf
 * **Framework Web**: Gin Gonic (`github.com/gin-gonic/gin`)
 * **Seguridad & Autenticación**: JWT (JSON Web Tokens) con cifrado `bcrypt` para contraseñas de usuarios.
 * **Control de Acceso (RBAC)**: Middleware de autorización con roles (`admin`, `supervisor`, `driver`).
-* **Puerto del Servicio API**: `8085` (`http://localhost:8085/api/v1` y acceso en red local Wi-Fi `http://192.168.6.123:8085/api/v1`)
+* **Puerto del Servicio API**: `8085` (Local: `http://localhost:8085/api/v1`, Red Wi-Fi: `http://192.168.6.123:8085/api/v1`, GCP Producción: `https://trackfleet360.newcenturyni.com/api/v1`)
 
 ### Frontend (Aplicación Web en Next.js)
 * **Framework**: Next.js 15 (App Router / TypeScript)
 * **Estilos & UI**: Vanilla CSS con variables CSS avanzadas, diseño Glassmorphism, Tailwind CSS y Lucide Icons.
 * **Mapas & Geolocalización**: Leaflet.js + CartoDB Dark Matter tiles via `next/dynamic` client-side.
 * **Exportación de Datos**: Native Excel workbook (`.xlsx`) mediante SheetJS (`xlsx`) y formato CSV.
-* **Puerto del Servidor Web**: `3005` (`http://localhost:3005` y acceso PWA en red local `http://192.168.6.123:3005`)
+* **Puerto del Servidor Web**: `3005` (Local: `http://localhost:3005`, Red Wi-Fi: `http://192.168.6.123:3005`, GCP Producción: `https://app.newcenturyni.com`)
 
 ### Módulo Móvil (Flutter App - `/mobile`)
 * **Framework Móvil**: Flutter 3.16.9 (Channel Stable, Dart 3.2.6)

@@ -4,9 +4,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/models.dart';
 
 class ApiService {
-  // 192.168.6.123 is the local Mac IP address for physical phones on the same Wi-Fi
-  // 8085 is the active Go backend API port
-  static const String baseUrl = 'http://192.168.6.123:8085/api/v1';
+  // Production URL for Google Cloud Platform VM
+  static const String prodUrl = 'https://trackfleet360.newcenturyni.com/api/v1';
+  // Local network IP address for local Mac development
+  static const String localUrl = 'http://192.168.6.123:8085/api/v1';
+  
+  static const String baseUrl = prodUrl;
   final Dio _dio = Dio();
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 

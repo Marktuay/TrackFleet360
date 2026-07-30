@@ -13,6 +13,7 @@ node_modules/
 
 # Go binaries & build artifacts
 backend/trackfleet360-backend
+backend/deploy/trackfleet360-backend-linux
 *.exe
 *.exe font
 *.dll
