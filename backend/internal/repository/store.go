@@ -436,6 +436,9 @@ func (m *MemoryStore) UpdateUser(ctx context.Context, id int, req *models.Update
 				if req.FuelType != "" {
 					d.FuelType = req.FuelType
 				}
+				if req.PlateNumber != "" {
+					d.PlateNumber = req.PlateNumber
+				}
 				d.UpdatedAt = time.Now()
 				break
 			}

@@ -18,7 +18,7 @@ import {
   KeyRound,
   AlertTriangle
 } from 'lucide-react';
-import { apiFetch, User } from '@/lib/api';
+import { apiFetch, User, Driver } from '@/lib/api';
 import AuthGuard from '@/components/auth/AuthGuard';
 
 export default function UsersPage() {
@@ -30,6 +30,7 @@ export default function UsersPage() {
     { id: 4, email: 'conductor2@trackfleet360.com', full_name: 'Roberto Gómez', role: 'driver', active: true },
   ]);
 
+  const [drivers, setDrivers] = useState<Driver[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Modals state
@@ -58,6 +59,14 @@ export default function UsersPage() {
     email: '',
     role: 'supervisor',
     new_password: '',
+    license_number: '',
+    phone: '',
+    company: '',
+    position: '',
+    vehicle_type: 'auto',
+    vehicle_subtype: 'sedan',
+    fuel_type: 'gasolina',
+    plate_number: '',
   });
 
   const [errorMsg, setErrorMsg] = useState('');
@@ -72,6 +81,9 @@ export default function UsersPage() {
   const fetchUsers = () => {
     apiFetch<User[]>('/users')
       .then((data) => setUsers(data))
+      .catch(() => {});
+    apiFetch<Driver[]>('/drivers')
+      .then((data) => setDrivers(data))
       .catch(() => {});
   };
 
@@ -90,6 +102,7 @@ export default function UsersPage() {
       setSuccessMsg(`Cuenta creada exitosamente para ${res.user.full_name}`);
       setUsers((prev) => [...prev, res.user]);
       setIsCreateModalOpen(false);
+      fetchUsers();
       setCreateFormData({
         full_name: '',
         email: '',
@@ -113,11 +126,20 @@ export default function UsersPage() {
 
   const openEditModal = (user: User) => {
     setEditingUser(user);
+    const driver = drivers.find((d) => d.user_id === user.id || d.user?.id === user.id);
     setEditFormData({
       full_name: user.full_name,
       email: user.email,
       role: user.role,
       new_password: '',
+      license_number: driver?.license_number || '',
+      phone: driver?.phone || '',
+      company: driver?.company || '',
+      position: driver?.position || '',
+      vehicle_type: driver?.vehicle_type || 'auto',
+      vehicle_subtype: driver?.vehicle_subtype || 'sedan',
+      fuel_type: driver?.fuel_type || 'gasolina',
+      plate_number: driver?.plate_number || '',
     });
     setErrorMsg('');
   };
@@ -135,6 +157,14 @@ export default function UsersPage() {
         full_name: editFormData.full_name,
         email: editFormData.email,
         role: editFormData.role,
+        license_number: editFormData.license_number,
+        phone: editFormData.phone,
+        company: editFormData.company,
+        position: editFormData.position,
+        vehicle_type: editFormData.vehicle_type,
+        vehicle_subtype: editFormData.vehicle_subtype,
+        fuel_type: editFormData.fuel_type,
+        plate_number: editFormData.plate_number,
       };
 
       if (editFormData.new_password.trim() !== '') {
@@ -148,6 +178,7 @@ export default function UsersPage() {
 
       setSuccessMsg(`Usuario ${res.user.full_name} actualizado correctamente`);
       setUsers((prev) => prev.map((u) => (u.id === editingUser.id ? res.user : u)));
+      fetchUsers();
       setEditingUser(null);
     } catch (err: any) {
       setErrorMsg(err.message || 'Error al actualizar el usuario');
@@ -662,6 +693,131 @@ export default function UsersPage() {
                       <option value="driver">Conductor (Captura de GPS y Registro de Odómetro)</option>
                     </select>
                   </div>
+
+                  {editFormData.role === 'driver' && (
+                    <div className="space-y-3 pt-2 border-t border-slate-800/80">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                            Licencia de Conducir
+                          </label>
+                          <input
+                            type="text"
+                            value={editFormData.license_number}
+                            onChange={(e) => setEditFormData({ ...editFormData, license_number: e.target.value })}
+                            placeholder="LIC-123456"
+                            className="w-full bg-slate-900/80 border border-slate-700/80 rounded-lg px-3.5 py-2 text-xs text-white focus:outline-none focus:border-sky-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                            Teléfono de Contacto
+                          </label>
+                          <input
+                            type="text"
+                            value={editFormData.phone}
+                            onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                            placeholder="+506 8888-0000"
+                            className="w-full bg-slate-900/80 border border-slate-700/80 rounded-lg px-3.5 py-2 text-xs text-white focus:outline-none focus:border-sky-500"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                            Empresa
+                          </label>
+                          <input
+                            type="text"
+                            value={editFormData.company}
+                            onChange={(e) => setEditFormData({ ...editFormData, company: e.target.value })}
+                            placeholder="Ej. Newcentury NI"
+                            className="w-full bg-slate-900/80 border border-slate-700/80 rounded-lg px-3.5 py-2 text-xs text-white focus:outline-none focus:border-sky-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                            Cargo / Puesto
+                          </label>
+                          <input
+                            type="text"
+                            value={editFormData.position}
+                            onChange={(e) => setEditFormData({ ...editFormData, position: e.target.value })}
+                            placeholder="Ej. Conductor Operativo"
+                            className="w-full bg-slate-900/80 border border-slate-700/80 rounded-lg px-3.5 py-2 text-xs text-white focus:outline-none focus:border-sky-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                            Placa Asignada
+                          </label>
+                          <input
+                            type="text"
+                            value={editFormData.plate_number}
+                            onChange={(e) => setEditFormData({ ...editFormData, plate_number: e.target.value })}
+                            placeholder="Ej. M-58392"
+                            className="w-full bg-slate-900/80 border border-slate-700/80 rounded-lg px-3.5 py-2 text-xs text-white focus:outline-none focus:border-sky-500 font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                            Tipo de Vehículo
+                          </label>
+                          <select
+                            value={editFormData.vehicle_type}
+                            onChange={(e) => {
+                              const vType = e.target.value;
+                              const subType = vType === 'moto' ? 'moto' : 'sedan';
+                              setEditFormData({ ...editFormData, vehicle_type: vType, vehicle_subtype: subType });
+                            }}
+                            className="w-full bg-slate-900/80 border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
+                          >
+                            <option value="auto">Vehículo (Auto)</option>
+                            <option value="moto">Motocicleta</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                            Categoría / Subtipo
+                          </label>
+                          <select
+                            value={editFormData.vehicle_subtype}
+                            onChange={(e) => setEditFormData({ ...editFormData, vehicle_subtype: e.target.value })}
+                            className="w-full bg-slate-900/80 border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
+                          >
+                            {editFormData.vehicle_type === 'moto' ? (
+                              <option value="moto">Motocicleta</option>
+                            ) : (
+                              <>
+                                <option value="sedan">Sedán</option>
+                                <option value="suv">SUV</option>
+                                <option value="camioneta">Camioneta (Pick-up)</option>
+                              </>
+                            )}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                            Combustible
+                          </label>
+                          <select
+                            value={editFormData.fuel_type}
+                            onChange={(e) => setEditFormData({ ...editFormData, fuel_type: e.target.value })}
+                            className="w-full bg-slate-900/80 border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
+                          >
+                            <option value="gasolina">Gasolina</option>
+                            <option value="diesel">Diésel</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="p-3 bg-slate-900/90 border border-slate-800 rounded-lg space-y-2">
                     <label className="block text-xs font-semibold text-sky-400 flex items-center gap-1.5">
