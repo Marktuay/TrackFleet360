@@ -106,7 +106,7 @@ func (h *Handler) CreateUser(c *gin.Context) {
 		Active:   true,
 	}
 
-	if err := h.repo.CreateUser(c.Request.Context(), user, req.Password, req.LicenseNumber, req.Phone); err != nil {
+	if err := h.repo.CreateUser(c.Request.Context(), user, req.Password, &req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

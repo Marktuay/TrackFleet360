@@ -28,6 +28,11 @@ export interface Driver {
   user?: User;
   license_number: string;
   phone: string;
+  company?: string;
+  position?: string;
+  vehicle_type?: string;
+  vehicle_subtype?: string;
+  fuel_type?: string;
   status: string;
 }
 

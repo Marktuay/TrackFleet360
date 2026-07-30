@@ -44,6 +44,11 @@ export default function UsersPage() {
     role: 'supervisor',
     license_number: '',
     phone: '',
+    company: '',
+    position: '',
+    vehicle_type: 'auto',
+    vehicle_subtype: 'sedan',
+    fuel_type: 'gasolina',
   });
 
   const [editFormData, setEditFormData] = useState({
@@ -90,6 +95,11 @@ export default function UsersPage() {
         role: 'supervisor',
         license_number: '',
         phone: '',
+        company: '',
+        position: '',
+        vehicle_type: 'auto',
+        vehicle_subtype: 'sedan',
+        fuel_type: 'gasolina',
       });
     } catch (err: any) {
       setErrorMsg(err.message || 'Error al crear la cuenta de usuario');
@@ -436,31 +446,115 @@ export default function UsersPage() {
                   </div>
 
                   {createFormData.role === 'driver' && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                          Licencia de Conducir
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={createFormData.license_number}
-                          onChange={(e) => setCreateFormData({ ...createFormData, license_number: e.target.value })}
-                          placeholder="LIC-123456"
-                          className="w-full bg-slate-900/80 border border-slate-700/80 rounded-lg px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
-                        />
+                    <div className="space-y-3 pt-2 border-t border-slate-800/80">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                            Licencia de Conducir
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={createFormData.license_number}
+                            onChange={(e) => setCreateFormData({ ...createFormData, license_number: e.target.value })}
+                            placeholder="LIC-123456"
+                            className="w-full bg-slate-900/80 border border-slate-700/80 rounded-lg px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                            Teléfono de Contacto
+                          </label>
+                          <input
+                            type="text"
+                            value={createFormData.phone}
+                            onChange={(e) => setCreateFormData({ ...createFormData, phone: e.target.value })}
+                            placeholder="+506 8888-0000"
+                            className="w-full bg-slate-900/80 border border-slate-700/80 rounded-lg px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                          Teléfono de Contacto
-                        </label>
-                        <input
-                          type="text"
-                          value={createFormData.phone}
-                          onChange={(e) => setCreateFormData({ ...createFormData, phone: e.target.value })}
-                          placeholder="+506 8888-0000"
-                          className="w-full bg-slate-900/80 border border-slate-700/80 rounded-lg px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
-                        />
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                            Empresa a la que Pertenece
+                          </label>
+                          <input
+                            type="text"
+                            value={createFormData.company}
+                            onChange={(e) => setCreateFormData({ ...createFormData, company: e.target.value })}
+                            placeholder="Ej. Newcentury NI / TrackFleet"
+                            className="w-full bg-slate-900/80 border border-slate-700/80 rounded-lg px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                            Cargo / Puesto
+                          </label>
+                          <input
+                            type="text"
+                            value={createFormData.position}
+                            onChange={(e) => setCreateFormData({ ...createFormData, position: e.target.value })}
+                            placeholder="Ej. Conductor Operativo"
+                            className="w-full bg-slate-900/80 border border-slate-700/80 rounded-lg px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                            Tipo de Vehículo
+                          </label>
+                          <select
+                            value={createFormData.vehicle_type}
+                            onChange={(e) => {
+                              const vType = e.target.value;
+                              const subType = vType === 'moto' ? 'moto' : 'sedan';
+                              setCreateFormData({ ...createFormData, vehicle_type: vType, vehicle_subtype: subType });
+                            }}
+                            className="w-full bg-slate-900/80 border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
+                          >
+                            <option value="auto">Vehículo (Auto)</option>
+                            <option value="moto">Motocicleta</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                            Categoría / Subtipo
+                          </label>
+                          <select
+                            value={createFormData.vehicle_subtype}
+                            onChange={(e) => setCreateFormData({ ...createFormData, vehicle_subtype: e.target.value })}
+                            className="w-full bg-slate-900/80 border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
+                          >
+                            {createFormData.vehicle_type === 'moto' ? (
+                              <option value="moto">Motocicleta</option>
+                            ) : (
+                              <>
+                                <option value="sedan">Sedán</option>
+                                <option value="suv">SUV</option>
+                                <option value="camioneta">Camioneta (Pick-up)</option>
+                              </>
+                            )}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                            Combustible
+                          </label>
+                          <select
+                            value={createFormData.fuel_type}
+                            onChange={(e) => setCreateFormData({ ...createFormData, fuel_type: e.target.value })}
+                            className="w-full bg-slate-900/80 border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
+                          >
+                            <option value="gasolina">Gasolina</option>
+                            <option value="diesel">Diésel</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
                   )}

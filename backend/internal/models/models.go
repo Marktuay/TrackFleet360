@@ -69,14 +69,19 @@ type Vehicle struct {
 }
 
 type Driver struct {
-	ID            int       `json:"id"`
-	UserID        int       `json:"user_id"`
-	User          *User     `json:"user,omitempty"`
-	LicenseNumber string    `json:"license_number"`
-	Phone         string    `json:"phone"`
-	Status        string    `json:"status"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	ID             int       `json:"id"`
+	UserID         int       `json:"user_id"`
+	User           *User     `json:"user,omitempty"`
+	LicenseNumber  string    `json:"license_number"`
+	Phone          string    `json:"phone"`
+	Company        string    `json:"company"`
+	Position       string    `json:"position"`
+	VehicleType    string    `json:"vehicle_type"`    // auto, moto
+	VehicleSubtype string    `json:"vehicle_subtype"` // sedan, suv, camioneta, moto
+	FuelType       string    `json:"fuel_type"`       // gasolina, diesel
+	Status         string    `json:"status"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type CutoffPeriod struct {
@@ -161,21 +166,31 @@ type LoginResponse struct {
 }
 
 type CreateUserRequest struct {
-	Email         string `json:"email" binding:"required,email"`
-	Password      string `json:"password" binding:"required,min=6"`
-	FullName      string `json:"full_name" binding:"required"`
-	Role          string `json:"role" binding:"required"` // admin, supervisor, driver
-	LicenseNumber string `json:"license_number"`         // Required if role == driver
-	Phone         string `json:"phone"`
+	Email          string `json:"email" binding:"required,email"`
+	Password       string `json:"password" binding:"required,min=6"`
+	FullName       string `json:"full_name" binding:"required"`
+	Role           string `json:"role" binding:"required"` // admin, supervisor, driver
+	LicenseNumber  string `json:"license_number"`         // Required if role == driver
+	Phone          string `json:"phone"`
+	Company        string `json:"company"`
+	Position       string `json:"position"`
+	VehicleType    string `json:"vehicle_type"`
+	VehicleSubtype string `json:"vehicle_subtype"`
+	FuelType       string `json:"fuel_type"`
 }
 
 type UpdateUserRequest struct {
-	FullName      string `json:"full_name"`
-	Email         string `json:"email"`
-	Password      string `json:"password,omitempty"`
-	Role          string `json:"role"`
-	LicenseNumber string `json:"license_number,omitempty"`
-	Phone         string `json:"phone,omitempty"`
+	FullName       string `json:"full_name"`
+	Email          string `json:"email"`
+	Password       string `json:"password,omitempty"`
+	Role           string `json:"role"`
+	LicenseNumber  string `json:"license_number,omitempty"`
+	Phone          string `json:"phone,omitempty"`
+	Company        string `json:"company,omitempty"`
+	Position       string `json:"position,omitempty"`
+	VehicleType    string `json:"vehicle_type,omitempty"`
+	VehicleSubtype string `json:"vehicle_subtype,omitempty"`
+	FuelType       string `json:"fuel_type,omitempty"`
 }
 
 type UpdateUserStatusRequest struct {

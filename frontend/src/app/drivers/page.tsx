@@ -40,24 +40,49 @@ export default function DriversPage() {
                 <thead className="bg-slate-900/80 text-xs font-semibold text-slate-400 uppercase border-b border-slate-800">
                   <tr>
                     <th className="px-6 py-3.5">Conductor</th>
-                    <th className="px-6 py-3.5">Correo Electrónico</th>
-                    <th className="px-6 py-3.5">Licencia de Conducir</th>
-                    <th className="px-6 py-3.5">Teléfono</th>
+                    <th className="px-6 py-3.5">Empresa / Cargo</th>
+                    <th className="px-6 py-3.5">Vehículo & Categoría</th>
+                    <th className="px-6 py-3.5">Combustible</th>
+                    <th className="px-6 py-3.5">Licencia & Teléfono</th>
                     <th className="px-6 py-3.5">Estado</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
                   {drivers.map((d) => (
                     <tr key={d.id} className="hover:bg-slate-800/40 transition-colors">
-                      <td className="px-6 py-4 font-medium text-white flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-sky-600/20 border border-sky-500/30 flex items-center justify-center text-sky-400 font-semibold text-xs">
-                          {d.user?.full_name.slice(0, 2).toUpperCase()}
+                      <td className="px-6 py-4 font-medium text-white">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-sky-600/20 border border-sky-500/30 flex items-center justify-center text-sky-400 font-semibold text-xs">
+                            {d.user?.full_name?.slice(0, 2).toUpperCase() || 'CD'}
+                          </div>
+                          <div>
+                            <div className="text-white font-semibold">{d.user?.full_name || 'Conductor'}</div>
+                            <div className="text-xs text-slate-500">{d.user?.email}</div>
+                          </div>
                         </div>
-                        {d.user?.full_name}
                       </td>
-                      <td className="px-6 py-4 text-slate-300">{d.user?.email}</td>
-                      <td className="px-6 py-4 font-mono text-xs text-sky-300">{d.license_number}</td>
-                      <td className="px-6 py-4 text-slate-400">{d.phone}</td>
+                      <td className="px-6 py-4">
+                        <div className="text-white font-medium text-xs">{d.company || 'Newcentury NI'}</div>
+                        <div className="text-xs text-slate-400">{d.position || 'Conductor Operativo'}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold uppercase ${
+                          d.vehicle_type === 'moto'
+                            ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
+                            : 'bg-sky-500/10 text-sky-400 border border-sky-500/30'
+                        }`}>
+                          {d.vehicle_type === 'moto' ? 'Motocicleta' : 'Vehículo'} ({d.vehicle_subtype || 'sedan'})
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300 capitalize border border-slate-700">
+                          {d.fuel_type || 'gasolina'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="font-mono text-xs text-sky-300">{d.license_number}</div>
+                        <div className="text-xs text-slate-400">{d.phone || 'Sin teléfono'}</div>
+                      </td>
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                           Activo

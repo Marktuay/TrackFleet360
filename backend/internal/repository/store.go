@@ -22,7 +22,7 @@ type Repository interface {
 	GetUserByID(ctx context.Context, id int) (*models.User, error)
 	GetDriverByUserID(ctx context.Context, userID int) (*models.Driver, error)
 	ListUsers(ctx context.Context) ([]models.User, error)
-	CreateUser(ctx context.Context, user *models.User, password string, licenseNumber string, phone string) error
+	CreateUser(ctx context.Context, user *models.User, password string, req *models.CreateUserRequest) error
 	UpdateUser(ctx context.Context, id int, req *models.UpdateUserRequest) (*models.User, error)
 	DeleteUser(ctx context.Context, id int) error
 	ToggleUserStatus(ctx context.Context, userID int, active bool) error
@@ -332,7 +332,7 @@ func (m *MemoryStore) ListUsers(ctx context.Context) ([]models.User, error) {
 	return list, nil
 }
 
-func (m *MemoryStore) CreateUser(ctx context.Context, u *models.User, password string, licenseNumber string, phone string) error {
+func (m *MemoryStore) CreateUser(ctx context.Context, u *models.User, password string, req *models.CreateUserRequest) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -352,18 +352,24 @@ func (m *MemoryStore) CreateUser(ctx context.Context, u *models.User, password s
 	m.users[u.ID] = u
 
 	if u.Role == models.RoleDriver {
-		if licenseNumber == "" {
-			licenseNumber = fmt.Sprintf("LIC-%d", time.Now().Unix()%1000000)
+		lic := req.LicenseNumber
+		if lic == "" {
+			lic = fmt.Sprintf("LIC-%d", time.Now().Unix()%1000000)
 		}
 		driver := &models.Driver{
-			ID:            m.nextDriverID,
-			UserID:        u.ID,
-			User:          u,
-			LicenseNumber: licenseNumber,
-			Phone:         phone,
-			Status:        "active",
-			CreatedAt:     time.Now(),
-			UpdatedAt:     time.Now(),
+			ID:             m.nextDriverID,
+			UserID:         u.ID,
+			User:           u,
+			LicenseNumber:  lic,
+			Phone:          req.Phone,
+			Company:        req.Company,
+			Position:       req.Position,
+			VehicleType:    req.VehicleType,
+			VehicleSubtype: req.VehicleSubtype,
+			FuelType:       req.FuelType,
+			Status:         "active",
+			CreatedAt:      time.Now(),
+			UpdatedAt:      time.Now(),
 		}
 		m.drivers[m.nextDriverID] = driver
 		m.nextDriverID++
@@ -415,6 +421,22 @@ func (m *MemoryStore) UpdateUser(ctx context.Context, id int, req *models.Update
 				if req.Phone != "" {
 					d.Phone = req.Phone
 				}
+				if req.Company != "" {
+					d.Company = req.Company
+				}
+				if req.Position != "" {
+					d.Position = req.Position
+				}
+				if req.VehicleType != "" {
+					d.VehicleType = req.VehicleType
+				}
+				if req.VehicleSubtype != "" {
+					d.VehicleSubtype = req.VehicleSubtype
+				}
+				if req.FuelType != "" {
+					d.FuelType = req.FuelType
+				}
+				d.UpdatedAt = time.Now()
 				break
 			}
 		}
@@ -424,14 +446,19 @@ func (m *MemoryStore) UpdateUser(ctx context.Context, id int, req *models.Update
 				lic = fmt.Sprintf("LIC-%d", time.Now().Unix()%1000000)
 			}
 			driver := &models.Driver{
-				ID:            m.nextDriverID,
-				UserID:        u.ID,
-				User:          u,
-				LicenseNumber: lic,
-				Phone:         req.Phone,
-				Status:        "active",
-				CreatedAt:     time.Now(),
-				UpdatedAt:     time.Now(),
+				ID:             m.nextDriverID,
+				UserID:         u.ID,
+				User:           u,
+				LicenseNumber:  lic,
+				Phone:          req.Phone,
+				Company:        req.Company,
+				Position:       req.Position,
+				VehicleType:    req.VehicleType,
+				VehicleSubtype: req.VehicleSubtype,
+				FuelType:       req.FuelType,
+				Status:         "active",
+				CreatedAt:      time.Now(),
+				UpdatedAt:      time.Now(),
 			}
 			m.drivers[m.nextDriverID] = driver
 			m.nextDriverID++
