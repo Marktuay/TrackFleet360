@@ -101,6 +101,7 @@ export default function UsersPage() {
         vehicle_type: 'auto',
         vehicle_subtype: 'sedan',
         fuel_type: 'gasolina',
+        plate_number: '',
       });
     } catch (err: any) {
       setErrorMsg(err.message || 'Error al crear la cuenta de usuario');
