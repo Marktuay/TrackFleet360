@@ -18,16 +18,16 @@ Esta guía explica paso a paso cómo desplegar **TrackFleet360** en dos Máquina
            └──────────────────┘          └───────────────────────────┘
 ```
 
-* **Servidor Backend (Go API)**: `https://trackfleet360.newcenturyni.com` (Puerto interno `8085`)
-* **Servidor Frontend (Next.js)**: `https://app.newcenturyni.com` (Puerto interno `3005`)
+* **Servidor Backend (Go API)**: `https://trackfleet360.newcenturyni.com` (IP: `35.185.89.55`, Puerto interno `8085`)
+* **Servidor Frontend (Next.js)**: `https://app.newcenturyni.com` (IP: `35.231.193.40`, Puerto interno `3005`)
 
 ---
 
 ## 🛠️ PASO 1: Registros DNS y Cortafuegos GCP
 
 1. **Registros A en el Proveedor de DNS**:
-   * `trackfleet360.newcenturyni.com` ➔ IP Pública de la VM Backend de GCP.
-   * `app.newcenturyni.com` ➔ IP Pública de la VM Frontend de GCP.
+   * `trackfleet360.newcenturyni.com` ➔ `35.185.89.55`
+   * `app.newcenturyni.com` ➔ `35.231.193.40`
 
 2. **Google Cloud Firewall Rules**:
    * Permitir tráfico en los puertos `80` (HTTP) y `443` (HTTPS) en ambas instancias VM.
