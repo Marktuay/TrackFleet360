@@ -53,42 +53,35 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // App Logo Icon
+                // TrackFleet360 Official Logo Image
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0284C7),
-                    borderRadius: BorderRadius.circular(20),
+                    color: const Color(0xFF0F172A),
+                    borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF0284C7).withOpacity(0.3),
-                        blurRadius: 20,
+                        color: const Color(0xFF0284C7).withOpacity(0.35),
+                        blurRadius: 25,
                         offset: const Offset(0, 10),
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.navigation_rounded,
-                    size: 48,
-                    color: Colors.white,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      height: 120,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 24),
-                RichText(
-                  text: const TextSpan(
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
-                    children: [
-                      TextSpan(text: 'TrackFleet'),
-                      TextSpan(text: '360', style: TextStyle(color: Color(0xFF38BDF8))),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 16),
                 const Text(
-                  'Aplicación para Conductores',
-                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                  'Control y Validación de Recorridos',
+                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13, fontWeight: FontWeight.w500),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 28),
 
                 if (_errorMessage != null)
                   Container(
@@ -162,6 +155,26 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                           ),
                   ),
+                ),
+                const SizedBox(height: 36),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.bolt, size: 14, color: Color(0xFF64748B)),
+                    const SizedBox(width: 6),
+                    RichText(
+                      text: const TextSpan(
+                        style: TextStyle(fontSize: 12, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
+                        children: [
+                          TextSpan(text: 'Powered by '),
+                          TextSpan(
+                            text: 'Newcentury',
+                            style: TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

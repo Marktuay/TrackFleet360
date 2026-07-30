@@ -111,7 +111,8 @@ $$ \text{Diferencia (KM)} = \text{KM Odómetro Decl.} - \text{KM GPS Real} $$
    * **Exportación Nativa a Excel (`.xlsx`)** con 3 hojas de trabajo (*Desglose Conductores*, *Resumen por Categoría*, *Calendario Cortes 2026*) y exportador CSV.
 7. **Aplicación Móvil Android Nativa y PWA (`/mobile`)**:
    * Registro de recorrido con captura de odómetro, geolocalización GPS y cámara.
-   * Compilación de ejecutable ejecutable nativo `.apk` en el entorno local de la Mac (`mobile/build/app/outputs/flutter-apk/app-debug.apk`).
+   * Integración del **Logo Oficial TrackFleet360** (icono de app launcher Android + imagen de marca en todas las pantallas) y firma **`Powered by Newcentury`** en los pies de página.
+   * Compilación de ejecutable nativo `.apk` en el entorno local de la Mac (`mobile/build/app/outputs/flutter-apk/app-debug.apk`).
    * Integración con GitHub Actions para despliegue automatizado en la nube.
 
 ---

@@ -148,7 +148,16 @@ class _ActiveJourneyScreenState extends State<ActiveJourneyScreen> {
       backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1E293B),
-        title: const Text('Recorrido en Curso', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Image.asset('assets/images/logo.png', height: 28, fit: BoxFit.contain),
+            ),
+            const SizedBox(width: 10),
+            const Text('Recorrido en Curso', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+          ],
+        ),
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -272,6 +281,28 @@ class _ActiveJourneyScreenState extends State<ActiveJourneyScreen> {
                         backgroundColor: const Color(0xFFEF4444),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.bolt, size: 12, color: Color(0xFF64748B)),
+                  const SizedBox(width: 4),
+                  RichText(
+                    text: const TextSpan(
+                      style: TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
+                      children: [
+                        TextSpan(text: 'Powered by '),
+                        TextSpan(
+                          text: 'Newcentury',
+                          style: TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
                   ),
                 ],
