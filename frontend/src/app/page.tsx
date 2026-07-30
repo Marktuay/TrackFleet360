@@ -1,17 +1,24 @@
-import Sidebar from '@/components/layout/Sidebar';
-import Header from '@/components/layout/Header';
-import DashboardPage from '@/app/dashboard/page';
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { getStoredToken } from '@/lib/api';
 
 export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = getStoredToken();
+    if (!token) {
+      router.replace('/login');
+    } else {
+      router.replace('/dashboard');
+    }
+  }, [router]);
+
   return (
-    <div className="flex min-h-screen bg-slate-950">
-      <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0">
-        <Header />
-        <main className="flex-1 p-8 overflow-y-auto">
-          <DashboardPage />
-        </main>
-      </div>
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="text-slate-400 text-sm animate-pulse font-medium">Verificando credenciales de acceso...</div>
     </div>
   );
 }

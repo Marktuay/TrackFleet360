@@ -23,6 +23,7 @@ import {
   Inbox
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import AuthGuard from '@/components/auth/AuthGuard';
 import { apiFetch, ReportSummary, DriverSubsidySummary, CutoffPeriod } from '@/lib/api';
 
 export default function ReportsPage() {
@@ -173,7 +174,8 @@ export default function ReportsPage() {
   const hasData = filteredDrivers.some((d) => d.total_km > 0);
 
   return (
-    <div className="flex min-h-screen bg-slate-950">
+    <AuthGuard>
+      <div className="flex min-h-screen bg-slate-950">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <Header />
@@ -507,5 +509,6 @@ export default function ReportsPage() {
         </main>
       </div>
     </div>
+    </AuthGuard>
   );
 }

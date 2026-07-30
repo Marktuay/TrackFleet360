@@ -16,7 +16,7 @@ import {
   Navigation,
   FileSpreadsheet
 } from 'lucide-react';
-import { apiFetch, ReportSummary, Journey } from '@/lib/api';
+import AuthGuard from '@/components/auth/AuthGuard';
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
@@ -52,32 +52,31 @@ export default function DashboardPage() {
     }
   };
 
-  if (!mounted) return null;
-
   return (
-    <div className="flex min-h-screen bg-slate-950">
-      <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0">
-        <Header />
-        <main className="flex-1 p-8 overflow-y-auto space-y-8">
-          {/* Header section */}
-          <div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Panel de Control Operativo y Subsidio</h1>
-            <p className="text-slate-400 text-sm mt-1">
-              Monitoreo en tiempo real de recorridos, discrepancias de odómetro y liquidación de subsidio vehicular (C$)
-            </p>
-          </div>
+    <AuthGuard>
+      <div className="flex min-h-screen bg-slate-950">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <Header />
+          <main className="flex-1 p-8 overflow-y-auto space-y-8">
+            {/* Header section */}
+            <div>
+              <h1 className="text-2xl font-bold text-white tracking-tight">Panel de Control Operativo y Subsidio</h1>
+              <p className="text-slate-400 text-sm mt-1">
+                Monitoreo en tiempo real de recorridos, discrepancias de odómetro y liquidación de subsidio vehicular (C$)
+              </p>
+            </div>
 
-          {/* Operational & Financial KPIs Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {/* Card 1: Subsidio Total ($) */}
-            <div className="glass-panel p-5 border border-emerald-500/30 bg-gradient-to-tr from-emerald-950/30 via-slate-900/80 to-slate-900/80">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Subsidio a Pagar</span>
-                <div className="p-2.5 bg-emerald-500/20 text-emerald-400 rounded-xl">
-                  <DollarSign className="w-5 h-5" />
+            {/* Operational & Financial KPIs Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {/* Card 1: Subsidio Total ($) */}
+              <div className="glass-panel p-5 border border-emerald-500/30 bg-gradient-to-tr from-emerald-950/30 via-slate-900/80 to-slate-900/80">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Subsidio a Pagar</span>
+                  <div className="p-2.5 bg-emerald-500/20 text-emerald-400 rounded-xl">
+                    <DollarSign className="w-5 h-5" />
+                  </div>
                 </div>
-              </div>
               <div className="mt-3">
                 <div className="text-2xl font-black text-white tracking-tight">
                   C$ {summary.total_subsidy_payout?.toLocaleString('es-NI', { minimumFractionDigits: 2 }) || '0.00'}
@@ -277,5 +276,6 @@ export default function DashboardPage() {
         </main>
       </div>
     </div>
+    </AuthGuard>
   );
 }

@@ -25,6 +25,7 @@ import {
   Route
 } from 'lucide-react';
 import { apiFetch, Journey } from '@/lib/api';
+import AuthGuard from '@/components/auth/AuthGuard';
 
 // Dynamically import RouteMap without SSR to prevent Leaflet window hydration errors
 const RouteMap = dynamic(() => import('@/components/map/RouteMap'), {
@@ -170,7 +171,8 @@ export default function JourneysPage() {
   if (!mounted) return null;
 
   return (
-    <div className="flex min-h-screen bg-slate-950">
+    <AuthGuard>
+      <div className="flex min-h-screen bg-slate-950">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <Header />
@@ -534,5 +536,6 @@ export default function JourneysPage() {
         </main>
       </div>
     </div>
+    </AuthGuard>
   );
 }
