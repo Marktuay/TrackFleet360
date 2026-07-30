@@ -16,6 +16,7 @@ import {
   Navigation,
   FileSpreadsheet
 } from 'lucide-react';
+import { apiFetch, ReportSummary, Journey } from '@/lib/api';
 import AuthGuard from '@/components/auth/AuthGuard';
 
 export default function DashboardPage() {
