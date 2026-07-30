@@ -244,14 +244,14 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.between,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Text(
                               'Foto Odómetro Inicial',
                               style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
                             ),
                             Container(
-                              padding: const EdgeInsets.horizontal(8, py: 3),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
                                 color: _odometerPhoto != null ? const Color(0xFF10B981).withOpacity(0.2) : const Color(0xFFF43F5E).withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(6),
@@ -296,7 +296,7 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
                                 label: const Text('Repetir', style: TextStyle(color: Color(0xFF38BDF8), fontSize: 12)),
                                 style: OutlinedButton.styleFrom(
                                   side: const BorderSide(color: Color(0xFF38BDF8)),
-                                  padding: const EdgeInsets.horizontal(10, py: 6),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                 ),
                               ),
                             ],
@@ -311,7 +311,7 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF0284C7),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                padding: const EdgeInsets.vertical(12),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
                               ),
                             ),
                           ),
