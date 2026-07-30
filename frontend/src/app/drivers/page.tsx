@@ -66,13 +66,20 @@ export default function DriversPage() {
                         <div className="text-xs text-slate-400">{d.position || 'Conductor Operativo'}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold uppercase ${
-                          d.vehicle_type === 'moto'
-                            ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
-                            : 'bg-sky-500/10 text-sky-400 border border-sky-500/30'
-                        }`}>
-                          {d.vehicle_type === 'moto' ? 'Motocicleta' : 'Vehículo'} ({d.vehicle_subtype || 'sedan'})
-                        </span>
+                        <div className="flex flex-col gap-1">
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold uppercase ${
+                            d.vehicle_type === 'moto'
+                              ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
+                              : 'bg-sky-500/10 text-sky-400 border border-sky-500/30'
+                          }`}>
+                            {d.vehicle_type === 'moto' ? 'Motocicleta' : 'Vehículo'} ({d.vehicle_subtype || 'sedan'})
+                          </span>
+                          {d.plate_number && (
+                            <span className="text-xs font-mono font-bold text-sky-300">
+                              Placa: {d.plate_number}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300 capitalize border border-slate-700">

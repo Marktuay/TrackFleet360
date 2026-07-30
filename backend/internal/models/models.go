@@ -79,6 +79,7 @@ type Driver struct {
 	VehicleType    string    `json:"vehicle_type"`    // auto, moto
 	VehicleSubtype string    `json:"vehicle_subtype"` // sedan, suv, camioneta, moto
 	FuelType       string    `json:"fuel_type"`       // gasolina, diesel
+	PlateNumber    string    `json:"plate_number"`
 	Status         string    `json:"status"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
@@ -177,6 +178,7 @@ type CreateUserRequest struct {
 	VehicleType    string `json:"vehicle_type"`
 	VehicleSubtype string `json:"vehicle_subtype"`
 	FuelType       string `json:"fuel_type"`
+	PlateNumber    string `json:"plate_number"`
 }
 
 type UpdateUserRequest struct {
@@ -191,6 +193,7 @@ type UpdateUserRequest struct {
 	VehicleType    string `json:"vehicle_type,omitempty"`
 	VehicleSubtype string `json:"vehicle_subtype,omitempty"`
 	FuelType       string `json:"fuel_type,omitempty"`
+	PlateNumber    string `json:"plate_number,omitempty"`
 }
 
 type UpdateUserStatusRequest struct {

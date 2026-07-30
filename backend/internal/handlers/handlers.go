@@ -191,6 +191,60 @@ func (h *Handler) ListVehicles(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	role := c.GetString("userRole")
+	userID := c.GetInt("userID")
+
+	// If authenticated user is a driver, return ONLY their assigned vehicle
+	if role == models.RoleDriver && userID > 0 {
+		driver, err := h.repo.GetDriverByUserID(c.Request.Context(), userID)
+		if err == nil && driver != nil {
+			var assigned []models.Vehicle
+			for _, v := range vehicles {
+				if (driver.PlateNumber != "" && v.PlateNumber == driver.PlateNumber) {
+					assigned = append(assigned, v)
+				}
+			}
+			if len(assigned) > 0 {
+				c.JSON(http.StatusOK, assigned)
+				return
+			}
+			// Fallback: Generate single assigned vehicle representation for this driver
+			vType := models.VehicleTypeAuto
+			if driver.VehicleType == "moto" {
+				vType = models.VehicleTypeMoto
+			}
+			plate := driver.PlateNumber
+			if plate == "" {
+				plate = fmt.Sprintf("M-%d-NI", driver.ID*100)
+			}
+			brand := driver.Company
+			if brand == "" {
+				brand = "Vehículo Asignado"
+			}
+			modelName := driver.VehicleSubtype
+			if modelName == "" {
+				modelName = "Sedán"
+			}
+			singleV := models.Vehicle{
+				ID:          1000 + driver.ID,
+				PlateNumber: plate,
+				Brand:       brand,
+				Model:       modelName,
+				Year:        2024,
+				VehicleType: vType,
+				SubsidyRate: models.RateAutoPerKM,
+				CurrentKM:   15000.0,
+				Status:      "active",
+			}
+			if vType == models.VehicleTypeMoto {
+				singleV.SubsidyRate = models.RateMotoPerKM
+			}
+			c.JSON(http.StatusOK, []models.Vehicle{singleV})
+			return
+		}
+	}
+
 	c.JSON(http.StatusOK, vehicles)
 }
 
