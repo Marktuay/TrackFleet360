@@ -17,8 +17,7 @@ import { removeStoredToken } from '@/lib/api';
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Recorridos', href: '/journeys', icon: MapPin },
-  { name: 'Vehículos', href: '/vehicles', icon: Truck },
-  { name: 'Conductores', href: '/drivers', icon: Users },
+  { name: 'Flota & Conductores', href: '/vehicles', icon: Truck },
   { name: 'Usuarios & Roles', href: '/users', icon: UserCog },
   { name: 'Reportería', href: '/reports', icon: FileSpreadsheet },
 ];
