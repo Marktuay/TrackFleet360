@@ -16,8 +16,8 @@ class ApiService {
   ApiService() {
     _dio.options.baseUrl = baseUrl;
     _dio.options.headers = {'Content-Type': 'application/json'};
-    _dio.options.connectTimeout = const Duration(seconds: 5);
-    _dio.options.receiveTimeout = const Duration(seconds: 5);
+    _dio.options.connectTimeout = const Duration(seconds: 10);
+    _dio.options.receiveTimeout = const Duration(seconds: 10);
   }
 
   Future<String?> getToken() async {
@@ -46,15 +46,15 @@ class ApiService {
       await saveToken(token);
       return response.data;
     } catch (e) {
-      // Offline / Demo fallback if local network backend is unreachable
+      // Offline / Demo fallback if backend is unreachable
       const demoToken = "demo_driver_jwt_token";
       await saveToken(demoToken);
       return {
         'token': demoToken,
         'user': {
-          'id': 3,
-          'email': email.isNotEmpty ? email : 'conductor@trackfleet360.com',
-          'full_name': 'Juan Pérez (Conductor)',
+          'id': 6,
+          'email': email.isNotEmpty ? email : 'jorge.mayorga@newcenturyni.com',
+          'full_name': 'Jorge Mayorga',
           'role': 'driver'
         }
       };
@@ -66,13 +66,23 @@ class ApiService {
     try {
       final response = await _dio.get('/vehicles', options: _getAuthOptions(token ?? ''));
       final List list = response.data;
-      return list.map((item) => Vehicle.fromJson(item)).toList();
+      if (list.isNotEmpty) {
+        return list.map((item) => Vehicle.fromJson(item)).toList();
+      }
     } catch (e) {
-      return [
-        Vehicle(id: 1, plateNumber: 'TF-101-AB', brand: 'Toyota', model: 'Hilux 4x4', currentKm: 18450.0, status: 'active'),
-        Vehicle(id: 2, plateNumber: 'TF-202-CD', brand: 'Nissan', model: 'Frontier', currentKm: 12300.0, status: 'active'),
-      ];
+      print('Error en API getVehicles: $e');
     }
+    // Strict fallback: ALWAYS return EXACTLY 1 assigned vehicle
+    return [
+      Vehicle(
+        id: 1, 
+        plateNumber: 'M-58392', 
+        brand: 'Toyota', 
+        model: 'Vehículo Asignado', 
+        currentKm: 15000.0, 
+        status: 'active'
+      ),
+    ];
   }
 
   Future<Journey?> startJourney({
