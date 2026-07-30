@@ -30,12 +30,12 @@ cd "${TARGET_DIR}"
 npm install
 NEXT_PUBLIC_API_URL=https://trackfleet360.newcenturyni.com/api/v1 npm run build
 
-# 5. Configurar servicio Systemd
-echo "⚙️ Configurando servicio Systemd..."
-sudo cp "${TARGET_DIR}/deploy/trackfleet360-frontend.service" /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable trackfleet360-frontend
-sudo systemctl restart trackfleet360-frontend
+# 5. Instalar PM2 e iniciar la app Next.js
+echo "⚙️ Configurando PM2 Process Manager..."
+sudo npm install -g pm2
+pm2 delete trackfleet360-frontend || true
+pm2 start "npx next start -p 3005" --name "trackfleet360-frontend"
+pm2 save
 
 # 6. Configurar Nginx
 echo "🌐 Configurando Nginx Reverse Proxy..."

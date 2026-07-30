@@ -9,9 +9,8 @@ set -e
 
 echo "🚀 Iniciando instalación y configuración de TrackFleet360 Backend..."
 
-# 1. Actualizar paquetes e instalar dependencias básicas
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y curl wget git nginx certbot python3-certbot-nginx build-essential
+sudo apt install -y curl wget git nginx certbot python3-certbot-nginx build-essential snapd
 
 # 2. Instalar Go 1.22.5
 if ! command -v go &> /dev/null; then
