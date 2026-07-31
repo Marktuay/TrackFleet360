@@ -103,6 +103,7 @@ type Journey struct {
 	ProjectID       *int          `json:"project_id,omitempty"`
 	CutoffID        *int          `json:"cutoff_id,omitempty"`
 	Cutoff          *CutoffPeriod `json:"cutoff,omitempty"`
+	Destination     string        `json:"destination"`
 	StartTime       time.Time     `json:"start_time"`
 	EndTime         *time.Time    `json:"end_time,omitempty"`
 	StartLat        float64       `json:"start_lat"`
@@ -203,6 +204,7 @@ type UpdateUserStatusRequest struct {
 type StartJourneyRequest struct {
 	VehicleID    int     `json:"vehicle_id" binding:"required"`
 	ProjectID    *int    `json:"project_id"`
+	Destination  string  `json:"destination"`
 	StartLat     float64 `json:"start_lat" binding:"required"`
 	StartLng     float64 `json:"start_lng" binding:"required"`
 	StartAddress string  `json:"start_address"`

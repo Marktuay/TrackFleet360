@@ -323,6 +323,7 @@ func (h *Handler) StartJourney(c *gin.Context) {
 		DriverID:     driverID,
 		VehicleID:    req.VehicleID,
 		ProjectID:    req.ProjectID,
+		Destination:  req.Destination,
 		StartLat:     req.StartLat,
 		StartLng:     req.StartLng,
 		StartAddress: req.StartAddress,
@@ -359,20 +360,19 @@ func (h *Handler) AddGPSPoints(c *gin.Context) {
 		return
 	}
 
-	points := make([]models.GPSPoint, len(req.Points))
-	now := time.Now()
-	for i, pt := range req.Points {
-		recAt := pt.RecordedAt
+	var points []models.GPSPoint
+	for _, p := range req.Points {
+		recAt := p.RecordedAt
 		if recAt.IsZero() {
-			recAt = now
+			recAt = time.Now()
 		}
-		points[i] = models.GPSPoint{
+		points = append(points, models.GPSPoint{
 			JourneyID:  journeyID,
-			Latitude:   pt.Latitude,
-			Longitude:  pt.Longitude,
-			Speed:      pt.Speed,
+			Latitude:   p.Latitude,
+			Longitude:  p.Longitude,
+			Speed:      p.Speed,
 			RecordedAt: recAt,
-		}
+		})
 	}
 
 	if err := h.repo.AddGPSPoints(c.Request.Context(), points); err != nil {
@@ -393,6 +393,12 @@ func (h *Handler) FinishJourney(c *gin.Context) {
 	var req models.FinishJourneyRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Mandatory check: Photo of end odometer is REQUIRED to finish journey!
+	if strings.TrimSpace(req.PhotoURL) == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Es OBLIGATORIO tomar la foto del odómetro final para concluir el viaje."})
 		return
 	}
 

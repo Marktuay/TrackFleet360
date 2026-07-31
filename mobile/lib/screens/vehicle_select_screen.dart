@@ -20,6 +20,7 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
   bool _isLoading = true;
   Vehicle? _selectedVehicle;
   final _startKmController = TextEditingController();
+  final _destinationController = TextEditingController();
   XFile? _odometerPhoto;
 
   @override
@@ -94,6 +95,36 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
   void _startJourney() async {
     if (_selectedVehicle == null) return;
 
+    final destination = _destinationController.text.trim();
+    if (destination.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: const Color(0xFF1E293B),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.place_rounded, color: Color(0xFFF59E0B)),
+              SizedBox(width: 8),
+              Text('Destino Requerido', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            ],
+          ),
+          content: const Text(
+            'Por favor escriba el destino del recorrido antes de iniciar (ejemplo: SINSA Altamira).',
+            style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 13),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0284C7)),
+              child: const Text('Entendido', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     // STRICT CHECK: Photo of odometer is mandatory to start journey!
     if (_odometerPhoto == null) {
       showDialog(
@@ -143,6 +174,7 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
 
     final journey = await _apiService.startJourney(
       vehicleId: _selectedVehicle!.id,
+      destination: destination,
       startLat: lat,
       startLng: lng,
       startAddress: 'Punto de Inicio (GPS Activo)',
@@ -260,6 +292,47 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
+
+                  // Destination Input Section (Texto Libre)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFF334155)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.place_outlined, color: Color(0xFF38BDF8), size: 18),
+                            SizedBox(width: 6),
+                            Text('Destino del Recorrido', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                            Text(' *', style: TextStyle(color: Color(0xFFFB7185), fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _destinationController,
+                          style: const TextStyle(color: Colors.white, fontSize: 13),
+                          decoration: InputDecoration(
+                            hintText: 'Ej: SINSA Altamira, Sucursal Linda Vista...',
+                            hintStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                            filled: true,
+                            fillColor: const Color(0xFF0F172A),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   
                   // Mandatory Camera Photo Card Section
                   Container(

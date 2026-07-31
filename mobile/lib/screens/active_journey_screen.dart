@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import 'login_screen.dart';
@@ -21,7 +23,9 @@ class ActiveJourneyScreen extends StatefulWidget {
 
 class _ActiveJourneyScreenState extends State<ActiveJourneyScreen> {
   final ApiService _apiService = ApiService();
+  final ImagePicker _picker = ImagePicker();
   final _endKmController = TextEditingController();
+  XFile? _endOdometerPhoto;
   Timer? _timer;
   int _secondsElapsed = 0;
   int _gpsPointsCaptured = 0;
@@ -32,6 +36,30 @@ class _ActiveJourneyScreenState extends State<ActiveJourneyScreen> {
     super.initState();
     _endKmController.text = (widget.journey.startKm + 15.0).toString();
     _startTimer();
+  }
+
+  Future<void> _takeEndOdometerPhoto() async {
+    try {
+      final XFile? photo = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 85,
+        maxWidth: 1200,
+      );
+      if (photo != null) {
+        setState(() {
+          _endOdometerPhoto = photo;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al acceder a la cámara: $e'),
+            backgroundColor: const Color(0xFFE11D48),
+          ),
+        );
+      }
+    }
   }
 
   void _startTimer() {
@@ -97,6 +125,46 @@ class _ActiveJourneyScreenState extends State<ActiveJourneyScreen> {
   }
 
   void _finishJourney() async {
+    // MANDATORY CHECK: End Odometer Photo is required to finish journey!
+    if (_endOdometerPhoto == null) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: const Color(0xFF1E293B),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.camera_alt_rounded, color: Color(0xFFF43F5E)),
+              SizedBox(width: 8),
+              Text('Foto Final Obligatoria', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            ],
+          ),
+          content: const Text(
+            'Es OBLIGATORIO tomar la foto del odómetro final del vehículo para concluir el viaje.\n\nPor favor active la cámara para tomar la fotografía.',
+            style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 13),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar', style: TextStyle(color: Color(0xFF94A3B8))),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(ctx);
+                _takeEndOdometerPhoto();
+              },
+              icon: const Icon(Icons.camera_alt, size: 18, color: Colors.white),
+              label: const Text('Tomar Foto Cierre', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0284C7),
+              ),
+            ),
+          ],
+        ),
+      );
+      return; // DO NOT PROCEED!
+    }
+
     final endKm = double.tryParse(_endKmController.text) ?? widget.journey.startKm;
     setState(() {
       _isSubmitting = true;
@@ -248,6 +316,29 @@ class _ActiveJourneyScreenState extends State<ActiveJourneyScreen> {
                   ),
                   const Text('Tiempo Transcurrido', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
                   const SizedBox(height: 16),
+                  // Destination Banner
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFF0284C7).withOpacity(0.4)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.place_rounded, color: Color(0xFF38BDF8), size: 18),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Destino: ${widget.journey.destination.isNotEmpty ? widget.journey.destination : "SINSA Altamira"}',
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -297,20 +388,61 @@ class _ActiveJourneyScreenState extends State<ActiveJourneyScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text('Fotografía del Odómetro (Opcional):', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13)),
-                  const SizedBox(height: 8),
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Fotografía del odómetro capturada correctamente')),
-                      );
-                    },
-                    icon: const Icon(Icons.camera_alt_outlined, color: Color(0xFF38BDF8)),
-                    label: const Text('Tomar Foto de Odómetro', style: TextStyle(color: Colors.white)),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFF38BDF8)),
-                      minimumSize: const Size(double.infinity, 48),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  
+                  // Mandatory End Odometer Camera Card
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _endOdometerPhoto != null ? const Color(0xFF10B981) : const Color(0xFFF43F5E).withOpacity(0.6),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Foto Odómetro Final', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: _endOdometerPhoto != null ? const Color(0xFF10B981).withOpacity(0.2) : const Color(0xFFF43F5E).withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                _endOdometerPhoto != null ? '✓ CAPTURADA' : '* REQUERIDO',
+                                style: TextStyle(
+                                  color: _endOdometerPhoto != null ? const Color(0xFF34D399) : const Color(0xFFFB7185),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        OutlinedButton.icon(
+                          onPressed: _takeEndOdometerPhoto,
+                          icon: Icon(
+                            _endOdometerPhoto != null ? Icons.check_circle : Icons.camera_alt,
+                            color: _endOdometerPhoto != null ? const Color(0xFF34D399) : const Color(0xFF38BDF8),
+                          ),
+                          label: Text(
+                            _endOdometerPhoto != null ? 'Foto Tomada (Tocar para cambiar)' : 'Tomar Foto Odómetro Final',
+                            style: const TextStyle(color: Colors.white, fontSize: 12),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: _endOdometerPhoto != null ? const Color(0xFF34D399) : const Color(0xFF38BDF8)),
+                            minimumSize: const Size(double.infinity, 44),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 24),

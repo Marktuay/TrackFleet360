@@ -71,6 +71,7 @@ export interface Journey {
   vehicle?: Vehicle;
   cutoff_id?: number;
   cutoff?: CutoffPeriod;
+  destination?: string;
   start_time: string;
   end_time?: string;
   start_lat: number;

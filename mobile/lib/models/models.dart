@@ -58,6 +58,7 @@ class Journey {
   final int vehicleId;
   final String startTime;
   final String? endTime;
+  final String destination;
   final double startLat;
   final double startLng;
   final double startKm;
@@ -75,6 +76,7 @@ class Journey {
     required this.vehicleId,
     required this.startTime,
     this.endTime,
+    required this.destination,
     required this.startLat,
     required this.startLng,
     required this.startKm,
@@ -94,6 +96,7 @@ class Journey {
       vehicleId: json['vehicle_id'] ?? 0,
       startTime: json['start_time'] ?? '',
       endTime: json['end_time'],
+      destination: json['destination'] ?? 'Destino General',
       startLat: (json['start_lat'] ?? 12.1364).toDouble(),
       startLng: (json['start_lng'] ?? -86.2514).toDouble(),
       startKm: (json['start_km'] ?? 0.0).toDouble(),

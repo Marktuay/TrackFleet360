@@ -258,11 +258,11 @@ export default function JourneysPage() {
                             <div className="text-[11px] text-slate-400 mt-0.5">{j.vehicle?.brand} {j.vehicle?.model}</div>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="text-xs text-white font-medium flex items-center gap-1">
-                              <Route className="w-3.5 h-3.5 text-sky-400 shrink-0" /> {j.start_address}
+                            <div className="text-xs text-emerald-400 font-bold flex items-center gap-1">
+                              <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Destino: {j.destination || 'SINSA Altamira'}
                             </div>
-                            <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5 pl-4">
-                              → {j.end_address || 'En Ruta'}
+                            <div className="text-[11px] text-slate-300 flex items-center gap-1 mt-1">
+                              <Route className="w-3 h-3 text-sky-400 shrink-0" /> {j.start_address} → {j.end_address || 'En Ruta'}
                             </div>
                           </td>
                           <td className="px-6 py-4 font-mono font-bold text-white text-xs">{j.declared_dist_km} KM</td>

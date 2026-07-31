@@ -87,6 +87,7 @@ class ApiService {
 
   Future<Journey?> startJourney({
     required int vehicleId,
+    required String destination,
     required double startLat,
     required double startLng,
     required String startAddress,
@@ -98,6 +99,7 @@ class ApiService {
         '/journeys/start',
         data: {
           'vehicle_id': vehicleId,
+          'destination': destination,
           'start_lat': startLat,
           'start_lng': startLng,
           'start_address': startAddress,
@@ -112,6 +114,7 @@ class ApiService {
         driverId: 1,
         vehicleId: vehicleId,
         startTime: DateTime.now().toIso8601String(),
+        destination: destination.isNotEmpty ? destination : 'SINSA Altamira',
         startLat: startLat,
         startLng: startLng,
         startKm: startKm,
