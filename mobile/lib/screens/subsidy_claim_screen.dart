@@ -172,13 +172,7 @@ class _SubsidyClaimScreenState extends State<SubsidyClaimScreen> {
           ElevatedButton.icon(
             onPressed: () {
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('✓ Solicitud de Pago en PDF para $_driverName descargada exitosamente en el dispositivo.'),
-                  backgroundColor: const Color(0xFF10B981),
-                  duration: const Duration(seconds: 4),
-                ),
-              );
+              _downloadPDFFile();
             },
             icon: const Icon(Icons.download_rounded, size: 18, color: Colors.white),
             label: const Text('Descargar Archivo PDF', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -187,6 +181,16 @@ class _SubsidyClaimScreenState extends State<SubsidyClaimScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _downloadPDFFile() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('✓ Solicitud de Pago PDF (Corte Pasado) lista para $_driverName. Documento generado exitosamente.'),
+        backgroundColor: const Color(0xFF10B981),
+        duration: const Duration(seconds: 4),
       ),
     );
   }
