@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:geolocator/geolocator.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import 'active_journey_screen.dart';
@@ -37,6 +38,33 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
       }
       _isLoading = false;
     });
+  }
+
+  Future<Position?> _getCurrentLocation() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        await Geolocator.openLocationSettings();
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          return null;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        return null;
+      }
+
+      return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<void> _takeOdometerPhoto() async {
@@ -108,11 +136,16 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
 
     final km = double.tryParse(_startKmController.text) ?? _selectedVehicle!.currentKm;
 
+    // Fetch REAL GPS location
+    final position = await _getCurrentLocation();
+    final lat = position?.latitude ?? 12.1364; // Default Managua, Nicaragua coordinates
+    final lng = position?.longitude ?? -86.2514;
+
     final journey = await _apiService.startJourney(
       vehicleId: _selectedVehicle!.id,
-      startLat: 9.9333,
-      startLng: -84.0833,
-      startAddress: 'San José Centro, Estación Principal',
+      startLat: lat,
+      startLng: lng,
+      startAddress: 'Punto de Inicio (GPS Activo)',
       startKm: km,
     );
 

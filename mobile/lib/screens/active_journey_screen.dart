@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import 'login_screen.dart';
@@ -23,32 +24,60 @@ class _ActiveJourneyScreenState extends State<ActiveJourneyScreen> {
   final _endKmController = TextEditingController();
   Timer? _timer;
   int _secondsElapsed = 0;
-  int _gpsPointsCaptured = 5;
+  int _gpsPointsCaptured = 0;
   bool _isSubmitting = false;
 
   @override
   void initState() {
     super.initState();
-    _endKmController.text = (widget.journey.startKm + 25.0).toString();
+    _endKmController.text = (widget.journey.startKm + 15.0).toString();
     _startTimer();
   }
 
   void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       if (mounted) {
         setState(() {
           _secondsElapsed++;
-          if (_secondsElapsed % 10 == 0) {
-            _gpsPointsCaptured++;
-            // Simulate periodic background GPS ping
-            _apiService.sendGPSPoint(
-              widget.journey.id,
-              9.9333 + (_secondsElapsed * 0.0001),
-              -84.0833 + (_secondsElapsed * 0.0001),
-              45.0,
-            );
-          }
         });
+
+        // Periodic GPS tracking ping every 10 seconds
+        if (_secondsElapsed % 10 == 0) {
+          try {
+            Position? pos = await Geolocator.getCurrentPosition(
+              desiredAccuracy: LocationAccuracy.high,
+            ).timeout(const Duration(seconds: 4), onTimeout: () async {
+              return await Geolocator.getLastKnownPosition() ??
+                  Position(
+                    latitude: widget.journey.startLat,
+                    longitude: widget.journey.startLng,
+                    timestamp: DateTime.now(),
+                    accuracy: 0,
+                    altitude: 0,
+                    altitudeAccuracy: 0,
+                    heading: 0,
+                    headingAccuracy: 0,
+                    speed: 0,
+                    speedAccuracy: 0,
+                  );
+            });
+
+            if (pos != null) {
+              setState(() {
+                _gpsPointsCaptured++;
+              });
+
+              _apiService.sendGPSPoint(
+                widget.journey.id,
+                pos.latitude,
+                pos.longitude,
+                pos.speed,
+              );
+            }
+          } catch (e) {
+            // Silently fallback if GPS temporarily unavailable
+          }
+        }
       }
     });
   }
@@ -73,11 +102,26 @@ class _ActiveJourneyScreenState extends State<ActiveJourneyScreen> {
       _isSubmitting = true;
     });
 
+    double endLat = widget.journey.startLat;
+    double endLng = widget.journey.startLng;
+
+    try {
+      Position? finalPos = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      if (finalPos != null) {
+        endLat = finalPos.latitude;
+        endLng = finalPos.longitude;
+      }
+    } catch (e) {
+      // Use last start position as fallback
+    }
+
     final result = await _apiService.finishJourney(
       journeyId: widget.journey.id,
-      endLat: 10.0167,
-      endLng: -84.2167,
-      endAddress: 'Alajuela Centro, Sucursal Norte',
+      endLat: endLat,
+      endLng: endLng,
+      endAddress: 'Punto de Llegada (GPS Registrado)',
       endKm: endKm,
       photoUrl: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800&q=80',
     );
