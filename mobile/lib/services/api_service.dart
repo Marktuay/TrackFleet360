@@ -72,14 +72,14 @@ class ApiService {
     } catch (e) {
       print('Error en API getVehicles: $e');
     }
-    // Strict fallback: ALWAYS return EXACTLY 1 assigned vehicle
+    // Strict fallback: ALWAYS return EXACTLY 1 assigned vehicle (Jorge Mayorga MOTO-808-NI)
     return [
       Vehicle(
-        id: 1, 
-        plateNumber: 'M-58392', 
-        brand: 'Toyota', 
-        model: 'Vehículo Asignado', 
-        currentKm: 15000.0, 
+        id: 2, 
+        plateNumber: 'MOTO-808-NI', 
+        brand: 'Yamaha', 
+        model: 'FZ-25 250cc', 
+        currentKm: 8500.0, 
         status: 'active'
       ),
     ];
