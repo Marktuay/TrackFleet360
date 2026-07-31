@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { getStoredToken } from '@/lib/api';
+import { getStoredToken, getRoleFromToken, getStoredUser, removeStoredToken } from '@/lib/api';
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -20,9 +20,22 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     if (!token) {
       setAuthorized(false);
       router.replace('/login');
-    } else {
-      setAuthorized(true);
+      return;
     }
+
+    const user = getStoredUser();
+    const roleFromToken = getRoleFromToken(token);
+    const userRole = user?.role || roleFromToken;
+
+    // Security Rule: Driver accounts are strictly blocked from web administration panel
+    if (userRole === 'driver') {
+      removeStoredToken();
+      setAuthorized(false);
+      router.replace('/login?error=driver_unauthorized');
+      return;
+    }
+
+    setAuthorized(true);
   }, [pathname, router]);
 
   if (!authorized && pathname !== '/login') {

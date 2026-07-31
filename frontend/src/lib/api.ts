@@ -124,11 +124,48 @@ export function getStoredToken(): string | null {
 }
 
 export function setStoredToken(token: string) {
+  if (typeof window === 'undefined') return;
   localStorage.setItem('token', token);
 }
 
+export function setStoredUser(user: User) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem('user', JSON.stringify(user));
+}
+
+export function getStoredUser(): User | null {
+  if (typeof window === 'undefined') return null;
+  const data = localStorage.getItem('user');
+  if (!data) return null;
+  try {
+    return JSON.parse(data);
+  } catch (e) {
+    return null;
+  }
+}
+
+export function getRoleFromToken(token: string): string | null {
+  try {
+    const base64Url = token.split('.')[1];
+    if (!base64Url) return null;
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    const parsed = JSON.parse(jsonPayload);
+    return parsed.role || null;
+  } catch (e) {
+    return null;
+  }
+}
+
 export function removeStoredToken() {
+  if (typeof window === 'undefined') return;
   localStorage.removeItem('token');
+  localStorage.removeItem('user');
 }
 
 export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {

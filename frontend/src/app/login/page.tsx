@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Navigation, Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
-import { API_BASE_URL, setStoredToken } from '@/lib/api';
+import { Navigation, Lock, Mail, ArrowRight, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { API_BASE_URL, setStoredToken, setStoredUser, getRoleFromToken } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,6 +11,12 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('driver_unauthorized')) {
+      setError('Acceso denegado: Las cuentas de conductor solo pueden utilizar la aplicación móvil. El panel web está reservado para Administradores y Supervisores.');
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,16 +36,21 @@ export default function LoginPage() {
       }
 
       const data = await res.json();
+      const userRole = data.user?.role || getRoleFromToken(data.token);
+
+      if (userRole === 'driver') {
+        setError('Acceso denegado: Las cuentas de conductor solo pueden utilizar la aplicación móvil. El panel web está reservado para Administradores y Supervisores.');
+        setLoading(false);
+        return;
+      }
+
       setStoredToken(data.token);
+      if (data.user) {
+        setStoredUser(data.user);
+      }
       router.push('/dashboard');
     } catch (err: any) {
-      // Demo fallback if backend server isn't running locally yet
-      if (email && password) {
-        setStoredToken('demo_token_123');
-        router.push('/dashboard');
-      } else {
-        setError(err.message || 'Error al iniciar sesión');
-      }
+      setError(err.message || 'Error al iniciar sesión');
     } finally {
       setLoading(false);
     }

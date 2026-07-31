@@ -1,8 +1,29 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Bell, ShieldCheck, User as UserIcon } from 'lucide-react';
+import { getStoredUser, User } from '@/lib/api';
 
 export default function Header() {
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const stored = getStoredUser();
+    if (stored) {
+      setUser(stored);
+    }
+  }, []);
+
+  const initials = user?.full_name
+    ? user.full_name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase()
+    : 'US';
+
+  const roleLabel = user?.role === 'admin'
+    ? 'Administrador'
+    : user?.role === 'supervisor'
+    ? 'Supervisor'
+    : 'Usuario';
+
   return (
     <header className="h-16 bg-slate-900/60 backdrop-blur-md border-b border-slate-800 px-8 flex items-center justify-between sticky top-0 z-30">
       <div className="flex items-center gap-3">
@@ -22,12 +43,14 @@ export default function Header() {
 
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-sky-600/30 border border-sky-500/40 flex items-center justify-center text-sky-400 font-semibold text-sm">
-            MS
+            {initials}
           </div>
           <div>
-            <div className="text-sm font-semibold text-white leading-tight">Maria Supervisor</div>
+            <div className="text-sm font-semibold text-white leading-tight">
+              {user?.full_name || 'Carlos Administrator'}
+            </div>
             <div className="text-xs text-sky-400 flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5" /> Supervisor
+              <ShieldCheck className="w-3.5 h-3.5" /> {roleLabel}
             </div>
           </div>
         </div>
