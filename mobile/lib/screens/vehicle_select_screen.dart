@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import 'active_journey_screen.dart';
+import 'subsidy_claim_screen.dart';
 
 class VehicleSelectScreen extends StatefulWidget {
   const VehicleSelectScreen({super.key});
@@ -209,6 +210,19 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
             const Text('Selección de Vehículo', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
           ],
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Solicitud de Pago PDF (Corte Pasado)',
+            icon: const Icon(Icons.picture_as_pdf_rounded, color: Color(0xFFF43F5E), size: 22),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SubsidyClaimScreen()),
+              );
+            },
+          ),
+          const SizedBox(width: 4),
+        ],
         elevation: 0,
       ),
       body: _isLoading
@@ -218,6 +232,48 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Banner button for PDF Subsidies Payment Request (Corte Pasado)
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const SubsidyClaimScreen()),
+                      );
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFF43F5E).withOpacity(0.6), width: 1.5),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.picture_as_pdf_rounded, color: Color(0xFFF43F5E), size: 22),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '📄 Solicitud de Pago (Corte Pasado)',
+                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                                ),
+                                Text(
+                                  'Descargar formulario PDF para cobro de subsidio',
+                                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8)),
+                        ],
+                      ),
+                    ),
+                  ),
+
                   const Text(
                     'Seleccione el vehículo asignado para el recorrido:',
                     style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),

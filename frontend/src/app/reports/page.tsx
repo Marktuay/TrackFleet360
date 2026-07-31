@@ -275,17 +275,10 @@ export default function ReportsPage() {
               </button>
 
               <button
-                onClick={exportReportPDF}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-rose-600/20 transition-all border border-rose-500/40"
-              >
-                <Download className="w-4 h-4" /> 🔒 Bajar Reporte PDF Oficial (Inviolable)
-              </button>
-
-              <button
                 onClick={exportReportExcel}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-emerald-600/20 transition-all border border-emerald-500/40"
               >
-                <ExcelIcon className="w-4 h-4" /> Excel (.xlsx)
+                <ExcelIcon className="w-4 h-4" /> Exportar Libro de Excel (.xlsx)
               </button>
             </div>
           </div>
