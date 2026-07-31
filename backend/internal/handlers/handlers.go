@@ -192,7 +192,10 @@ func (h *Handler) ListVehicles(c *gin.Context) {
 		return
 	}
 
-	role := c.GetString("userRole")
+	role := c.GetString("role")
+	if role == "" {
+		role = c.GetString("userRole")
+	}
 	userID := c.GetInt("userID")
 
 	// If authenticated user is a driver, ALWAYS return EXACTLY 1 assigned vehicle
