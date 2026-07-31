@@ -31,9 +31,10 @@ export default function VehiclesPage() {
   ]);
 
   const [drivers, setDrivers] = useState<Driver[]>([
-    { id: 1, user_id: 3, license_number: 'LIC-884920', phone: '+506 8888-1111', company: 'Newcentury NI', position: 'Conductor Operativo', vehicle_type: 'auto', vehicle_subtype: 'sedan', fuel_type: 'gasolina', plate_number: 'M-58392', status: 'active', user: { id: 3, email: 'conductor1@trackfleet360.com', full_name: 'Juan Pérez', role: 'driver', active: true } },
-    { id: 2, user_id: 4, license_number: 'LIC-993021', phone: '+506 8888-2222', company: 'TrackFleet360', position: 'Conductor Reparto', vehicle_type: 'moto', vehicle_subtype: 'moto', fuel_type: 'gasolina', plate_number: 'M-99102', status: 'active', user: { id: 4, email: 'conductor2@trackfleet360.com', full_name: 'Roberto Gómez', role: 'driver', active: true } },
+    { id: 1, user_id: 3, license_number: 'LIC-884920', phone: '+506 8888-1111', company: 'Newcentury NI', position: 'Conductor Operativo', vehicle_type: 'auto', vehicle_subtype: 'Hilux 4x4', fuel_type: 'gasolina', plate_number: 'TF-101-AB', status: 'active', user: { id: 3, email: 'conductor1@trackfleet360.com', full_name: 'Juan Pérez', role: 'driver', active: true } },
+    { id: 2, user_id: 4, license_number: 'LIC-993021', phone: '+506 8888-2222', company: 'TrackFleet360', position: 'Conductor Reparto', vehicle_type: 'auto', vehicle_subtype: 'D-Max', fuel_type: 'diesel', plate_number: 'TF-303-EF', status: 'active', user: { id: 4, email: 'conductor2@trackfleet360.com', full_name: 'Roberto Gómez', role: 'driver', active: true } },
     { id: 3, user_id: 5, license_number: 'LIC-772019', phone: '+505 8888-9999', company: 'Newcentury NI', position: 'Auditor General', vehicle_type: 'auto', vehicle_subtype: 'suv', fuel_type: 'gasolina', plate_number: 'M-10920', status: 'active', user: { id: 5, email: 'auditor-general@newcenturyni.com', full_name: 'Auditor General', role: 'driver', active: true } },
+    { id: 4, user_id: 6, license_number: 'LIC-882011', phone: '+505 8888-7777', company: 'Newcentury NI', position: 'Conductor Operativo', vehicle_type: 'moto', vehicle_subtype: 'Yamaha FZ-25 250cc', fuel_type: 'gasolina', plate_number: 'MOTO-808-NI', status: 'active', user: { id: 6, email: 'jorge.mayorga@newcenturyni.com', full_name: 'Jorge Mayorga', role: 'driver', active: true } },
   ]);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -271,6 +272,7 @@ export default function VehiclesPage() {
                     <thead className="bg-slate-900/80 text-xs font-semibold text-slate-400 uppercase border-b border-slate-800">
                       <tr>
                         <th className="px-6 py-3.5">Placa & Vehículo</th>
+                        <th className="px-6 py-3.5">Conductor Asignado</th>
                         <th className="px-6 py-3.5">Tipo y Tarifa Subsidio</th>
                         <th className="px-6 py-3.5">Odómetro Actual</th>
                         <th className="px-6 py-3.5">KM Recorridos</th>
@@ -284,6 +286,9 @@ export default function VehiclesPage() {
                         const rate = isMoto ? 6 : 10;
                         const kmTraveled = v.current_km - v.initial_km;
                         const totalSubsidy = kmTraveled * rate;
+                        const assignedDriver = drivers.find(
+                          (d) => d.plate_number && d.plate_number.toLowerCase() === v.plate_number.toLowerCase()
+                        );
 
                         return (
                           <tr key={v.id} className="hover:bg-slate-800/40 transition-colors">
@@ -297,6 +302,25 @@ export default function VehiclesPage() {
                                   <div className="text-xs text-slate-400">{v.brand} {v.model} ({v.year})</div>
                                 </div>
                               </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              {assignedDriver ? (
+                                <div className="flex items-center gap-2.5">
+                                  <div className="w-7 h-7 rounded-full bg-sky-600/20 border border-sky-500/30 flex items-center justify-center text-sky-400 font-semibold text-xs shrink-0">
+                                    {assignedDriver.user?.full_name?.slice(0, 2).toUpperCase() || 'CD'}
+                                  </div>
+                                  <div>
+                                    <div className="text-xs font-semibold text-white">
+                                      {assignedDriver.user?.full_name || 'Conductor Asignado'}
+                                    </div>
+                                    <div className="text-[11px] text-slate-400 font-mono">
+                                      {assignedDriver.user?.email}
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-slate-500 italic">Sin conductor asignado</span>
+                              )}
                             </td>
                             <td className="px-6 py-4">
                               <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold uppercase ${
