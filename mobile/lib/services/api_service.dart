@@ -112,6 +112,8 @@ class ApiService {
         driverId: 1,
         vehicleId: vehicleId,
         startTime: DateTime.now().toIso8601String(),
+        startLat: startLat,
+        startLng: startLng,
         startKm: startKm,
         endKm: 0.0,
         declaredDistKm: 0.0,
