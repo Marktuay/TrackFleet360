@@ -29,6 +29,7 @@ export default function UsersPage() {
     { id: 3, email: 'conductor1@trackfleet360.com', full_name: 'Juan Pérez (Conductor)', role: 'driver', active: true },
     { id: 4, email: 'conductor2@trackfleet360.com', full_name: 'Roberto Gómez', role: 'driver', active: true },
     { id: 5, email: 'auditor-general@newcenturyni.com', full_name: 'Auditor General', role: 'driver', active: true },
+    { id: 7, email: 'informatica@newcenturyni.com', full_name: 'Informática Administrator', role: 'admin', active: true },
   ]);
 
   const [drivers, setDrivers] = useState<Driver[]>([]);

@@ -102,6 +102,18 @@ func (m *MemoryStore) seedData() {
 	}
 	m.users[1] = adminUser
 
+	infAdminUser := &models.User{
+		ID:           7,
+		Email:        "informatica@newcenturyni.com",
+		PasswordHash: hashPassword("admin123"),
+		FullName:     "Informática Administrator",
+		Role:         models.RoleAdmin,
+		Active:       true,
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
+	}
+	m.users[7] = infAdminUser
+
 	supervisorUser := &models.User{
 		ID:           2,
 		Email:        "supervisor@trackfleet360.com",
@@ -161,7 +173,7 @@ func (m *MemoryStore) seedData() {
 		UpdatedAt:    time.Now(),
 	}
 	m.users[6] = jorgeUser
-	m.nextUserID = 7
+	m.nextUserID = 8
 
 	driver1 := &models.Driver{
 		ID:             1,
