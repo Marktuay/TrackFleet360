@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import 'login_screen.dart';
+import 'vehicle_select_screen.dart';
 
 class ActiveJourneyScreen extends StatefulWidget {
   final Journey journey;
@@ -242,7 +243,7 @@ class _ActiveJourneyScreenState extends State<ActiveJourneyScreen> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  MaterialPageRoute(builder: (_) => const VehicleSelectScreen()),
                   (route) => false,
                 );
               },

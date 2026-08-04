@@ -42,6 +42,40 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _handleCorporateLogin() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final corporateEmail = _emailController.text.isNotEmpty && _emailController.text.contains('@') 
+        ? _emailController.text 
+        : 'jorge.mayorga@newcenturyni.com';
+    _emailController.text = corporateEmail;
+    if (_passwordController.text.isEmpty) {
+      _passwordController.text = 'admin123';
+    }
+
+    try {
+      await _apiService.login(corporateEmail, _passwordController.text);
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const VehicleSelectScreen()),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error en inicio de sesión corporativo Newcentury NI.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -156,7 +190,29 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                   ),
                 ),
-                const SizedBox(height: 36),
+                const SizedBox(height: 12),
+                
+                // Corporate Email Sign-In Option
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: OutlinedButton.icon(
+                    onPressed: _isLoading ? null : _handleCorporateLogin,
+                    icon: const Icon(Icons.business_center_rounded, color: Color(0xFF38BDF8), size: 20),
+                    label: const Text(
+                      'Continuar con Correo Corporativo (@newcenturyni.com)',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF38BDF8)),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFF0284C7), width: 1.5),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      backgroundColor: const Color(0xFF0284C7).withOpacity(0.08),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
