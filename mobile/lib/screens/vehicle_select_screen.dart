@@ -242,14 +242,21 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
       backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1E293B),
+        titleSpacing: 12,
         title: Row(
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
-              child: Image.asset('assets/images/logo.png', height: 28, fit: BoxFit.contain),
+              child: Image.asset('assets/images/logo.png', height: 26, fit: BoxFit.contain),
             ),
-            const SizedBox(width: 10),
-            const Text('Selección de Vehículo', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+            const SizedBox(width: 8),
+            const Expanded(
+              child: Text(
+                'Inicio de Viaje',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
         actions: [
