@@ -1,4 +1,4 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8085/api/v1';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://trackfleet360.newcenturyni.com/api/v1';
 export const API_BASE_URL = API_URL;
 
 export interface User {
