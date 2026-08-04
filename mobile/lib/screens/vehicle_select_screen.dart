@@ -6,6 +6,7 @@ import '../models/models.dart';
 import '../services/api_service.dart';
 import 'active_journey_screen.dart';
 import 'subsidy_claim_screen.dart';
+import 'login_screen.dart';
 
 class VehicleSelectScreen extends StatefulWidget {
   const VehicleSelectScreen({super.key});
@@ -28,6 +29,47 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
   void initState() {
     super.initState();
     _loadVehicles();
+  }
+
+  void _confirmLogout() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.logout_rounded, color: Color(0xFFF43F5E)),
+            SizedBox(width: 8),
+            Text('Cerrar Sesión', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+          ],
+        ),
+        content: const Text(
+          '¿Está seguro de que desea cerrar la sesión en este dispositivo?',
+          style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar', style: TextStyle(color: Color(0xFF94A3B8))),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await _apiService.logout();
+              if (mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  (route) => false,
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF43F5E)),
+            child: const Text('Cerrar Sesión', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _loadVehicles() async {
@@ -220,6 +262,11 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
                 MaterialPageRoute(builder: (_) => const SubsidyClaimScreen()),
               );
             },
+          ),
+          IconButton(
+            tooltip: 'Cerrar Sesión',
+            icon: const Icon(Icons.logout_rounded, color: Color(0xFF94A3B8), size: 22),
+            onPressed: _confirmLogout,
           ),
           const SizedBox(width: 4),
         ],
