@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 
@@ -62,8 +65,135 @@ class _SubsidyClaimScreenState extends State<SubsidyClaimScreen> {
     }
   }
 
-  double get _totalKm => _pastJourneys.fold(0.0, (sum, j) => sum + (j['km_gps'] as double));
-  double get _totalSubsidy => _pastJourneys.fold(0.0, (sum, j) => sum + (j['subsidio'] as double));
+  double get _totalKm => _pastJourneys.fold(0.0, (sum, item) => sum + (item['km_gps'] as double));
+  double get _totalSubsidy => _pastJourneys.fold(0.0, (sum, item) => sum + (item['subsidio'] as double));
+
+  void _downloadPDFFile() async {
+    try {
+      final pdf = pw.Document();
+
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          build: (pw.Context context) {
+            return pw.Padding(
+              padding: const pw.EdgeInsets.all(24),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  pw.Container(
+                    width: double.infinity,
+                    padding: const pw.EdgeInsets.all(12),
+                    decoration: const pw.BoxDecoration(
+                      color: PdfColors.blueGrey900,
+                    ),
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(
+                          'TRACKFLEET 360 - FORMATO OFICIAL',
+                          style: pw.TextStyle(color: PdfColors.white, fontSize: 16, fontWeight: pw.FontWeight.bold),
+                        ),
+                        pw.SizedBox(height: 4),
+                        pw.Text(
+                          'SOLICITUD DE PAGO DE SUBSIDIO DE TRANSPORTE',
+                          style: pw.TextStyle(color: PdfColors.white, fontSize: 13, fontWeight: pw.FontWeight.bold),
+                        ),
+                        pw.SizedBox(height: 4),
+                        pw.Text(
+                          'DOCUMENTO CERTIFICADO Y NO MANIPULABLE',
+                          style: pw.TextStyle(color: PdfColors.tealAccent400, fontSize: 10, fontWeight: pw.FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                  pw.SizedBox(height: 16),
+                  pw.Text('Conductor: $_driverName | Licencia: $_licenseNo', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                  pw.Text('Vehículo Asignado: $_vehiclePlate ($_vehicleModel)'),
+                  pw.Text('Período de Corte: $_cutoffName | Tarifa: C\$ $_subsidyRate / KM'),
+                  pw.SizedBox(height: 16),
+
+                  // Table
+                  pw.Table.fromTextArray(
+                    headers: ['Destino', 'Fecha', 'Horario', 'Odómetros', 'KM GPS', 'Subsidio (C\$)'],
+                    data: _pastJourneys.map((j) => [
+                      j['destino'],
+                      j['fecha'],
+                      '${j['hora_inicio']} - ${j['hora_fin']}',
+                      '${j['odo_inicio']} -> ${j['odo_fin']}',
+                      '${j['km_gps']} KM',
+                      'C\$ ${(j['subsidio'] as double).toStringAsFixed(2)}',
+                    ]).toList(),
+                    headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+                    headerDecoration: const pw.BoxDecoration(color: PdfColors.blueGrey800),
+                    rowDecoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey300))),
+                  ),
+                  pw.SizedBox(height: 16),
+
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text('TOTAL KM: ${_totalKm.toStringAsFixed(1)} KM', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.Text('TOTAL SUBSIDIO: C\$ ${_totalSubsidy.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: PdfColors.green800)),
+                    ],
+                  ),
+                  pw.SizedBox(height: 50),
+
+                  // Signatures
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Column(
+                        children: [
+                          pw.Container(width: 180, height: 1, color: PdfColors.black),
+                          pw.SizedBox(height: 4),
+                          pw.Text('Firma del Conductor', style: const pw.TextStyle(fontSize: 10)),
+                        ],
+                      ),
+                      pw.Column(
+                        children: [
+                          pw.Container(width: 180, height: 1, color: PdfColors.black),
+                          pw.SizedBox(height: 4),
+                          pw.Text('Aprobación Supervisión', style: const pw.TextStyle(fontSize: 10)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+
+      final bytes = await pdf.save();
+
+      await Printing.sharePdf(
+        bytes: bytes,
+        filename: 'Solicitud_Pago_Subsidio_${_driverName.replaceAll(' ', '_')}.pdf',
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✓ Solicitud de Pago PDF generada para $_driverName.'),
+            backgroundColor: const Color(0xFF10B981),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al generar PDF: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
 
   void _generatePDFDocument() {
     showDialog(
@@ -181,16 +311,6 @@ class _SubsidyClaimScreenState extends State<SubsidyClaimScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  void _downloadPDFFile() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('✓ Solicitud de Pago PDF (Corte Pasado) lista para $_driverName. Documento generado exitosamente.'),
-        backgroundColor: const Color(0xFF10B981),
-        duration: const Duration(seconds: 4),
       ),
     );
   }
