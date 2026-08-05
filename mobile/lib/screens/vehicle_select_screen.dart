@@ -252,7 +252,7 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
             const SizedBox(width: 8),
             const Expanded(
               child: Text(
-                'Inicio de Viaje',
+                'Inicio de Viaje (v1.5)',
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                 overflow: TextOverflow.ellipsis,
               ),

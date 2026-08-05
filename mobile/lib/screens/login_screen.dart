@@ -239,6 +239,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             text: 'Newcentury',
                             style: TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.bold),
                           ),
+                          TextSpan(
+                            text: ' • v1.5',
+                            style: TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w600),
+                          ),
                         ],
                       ),
                     ),
