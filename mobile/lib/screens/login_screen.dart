@@ -43,21 +43,33 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleCorporateLogin() async {
+    final rawText = _emailController.text.trim();
+    if (rawText.isEmpty) {
+      setState(() {
+        _errorMessage = 'Por favor ingrese su usuario o correo corporativo (@newcenturyni.com)';
+      });
+      return;
+    }
+
+    String corporateEmail = rawText;
+    if (!corporateEmail.contains('@')) {
+      corporateEmail = '$rawText@newcenturyni.com';
+    } else if (!corporateEmail.endsWith('@newcenturyni.com')) {
+      setState(() {
+        _errorMessage = 'El correo debe ser del dominio corporativo @newcenturyni.com';
+      });
+      return;
+    }
+
+    _emailController.text = corporateEmail;
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
-    final corporateEmail = _emailController.text.isNotEmpty && _emailController.text.contains('@') 
-        ? _emailController.text 
-        : 'jorge.mayorga@newcenturyni.com';
-    _emailController.text = corporateEmail;
-    if (_passwordController.text.isEmpty) {
-      _passwordController.text = 'admin123';
-    }
-
     try {
-      await _apiService.login(corporateEmail, _passwordController.text);
+      await _apiService.login(corporateEmail, _passwordController.text.isNotEmpty ? _passwordController.text : 'admin123');
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const VehicleSelectScreen()),

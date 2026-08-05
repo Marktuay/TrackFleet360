@@ -16,9 +16,8 @@ class _SubsidyClaimScreenState extends State<SubsidyClaimScreen> {
   final ApiService _apiService = ApiService();
   bool _isLoading = true;
 
-  // Mock data for Driver's Past Cutoff Subsidies Claim
   final String _cutoffName = "Corte Quincenal (1 a 15 de Julio 2026)";
-  final String _driverName = "Jorge Mayorga";
+  String _driverName = "Conductor Registrado";
   final String _licenseNo = "LIC-774920";
   final String _vehiclePlate = "MOTO-808-NI";
   final String _vehicleModel = "Yamaha FZ-25 250cc";

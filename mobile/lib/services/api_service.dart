@@ -47,14 +47,24 @@ class ApiService {
       return response.data;
     } catch (e) {
       // Offline / Demo fallback if backend is unreachable
+      // Dynamic name formatting from email address
+      String derivedName = email.contains('@') ? email.split('@').first : email;
+      derivedName = derivedName.replaceAll('.', ' ').replaceAll('_', ' ');
+      if (derivedName.isNotEmpty) {
+        derivedName = derivedName.split(' ').map((str) => str.isNotEmpty ? '${str[0].toUpperCase()}${str.substring(1)}' : '').join(' ');
+      } else {
+        derivedName = 'Conductor';
+      }
+
       const demoToken = "demo_driver_jwt_token";
       await saveToken(demoToken);
+
       return {
         'token': demoToken,
         'user': {
           'id': 6,
-          'email': email.isNotEmpty ? email : 'jorge.mayorga@newcenturyni.com',
-          'full_name': 'Jorge Mayorga',
+          'email': email.isNotEmpty ? email : 'conductor@newcenturyni.com',
+          'full_name': derivedName,
           'role': 'driver'
         }
       };
