@@ -19,34 +19,11 @@ class _SubsidyClaimScreenState extends State<SubsidyClaimScreen> {
   final String _cutoffName = "Corte Quincenal (1 a 15 de Julio 2026)";
   String _driverName = "Conductor Registrado";
   final String _licenseNo = "LIC-NICA";
-  final String _vehiclePlate = "PLACA-PENDIENTE";
-  final String _vehicleModel = "Vehículo Corporativo";
+  String _vehiclePlate = "PLACA-PENDIENTE";
+  String _vehicleModel = "Vehículo Corporativo";
   final double _subsidyRate = 6.0; // 6 C$/km for motorcycles
 
-  List<Map<String, dynamic>> _pastJourneys = [
-    {
-      "id": 101,
-      "destino": "SINSA Altamira",
-      "fecha": "02/07/2026",
-      "hora_inicio": "08:15 AM",
-      "hora_fin": "10:30 AM",
-      "odo_inicio": 8500.0,
-      "odo_fin": 8525.0,
-      "km_gps": 24.8,
-      "subsidio": 148.80,
-    },
-    {
-      "id": 102,
-      "destino": "Sucursal Linda Vista",
-      "fecha": "08/07/2026",
-      "hora_inicio": "01:00 PM",
-      "hora_fin": "03:15 PM",
-      "odo_inicio": 8525.0,
-      "odo_fin": 8550.0,
-      "km_gps": 25.0,
-      "subsidio": 150.00,
-    },
-  ];
+  List<Map<String, dynamic>> _pastJourneys = [];
 
   @override
   void initState() {
@@ -55,8 +32,17 @@ class _SubsidyClaimScreenState extends State<SubsidyClaimScreen> {
   }
 
   void _loadData() async {
-    // Simulate API fetch delay
-    await Future.delayed(const Duration(milliseconds: 400));
+    final userData = await _apiService.getUserData();
+    if (userData != null && userData['full_name'] != null && userData['full_name'].toString().isNotEmpty) {
+      _driverName = userData['full_name'];
+    }
+
+    final vehicles = await _apiService.getVehicles();
+    if (vehicles.isNotEmpty) {
+      _vehiclePlate = vehicles.first.plateNumber;
+      _vehicleModel = "${vehicles.first.brand} ${vehicles.first.model}".trim();
+    }
+
     if (mounted) {
       setState(() {
         _isLoading = false;
@@ -116,14 +102,18 @@ class _SubsidyClaimScreenState extends State<SubsidyClaimScreen> {
                   // Table
                   pw.Table.fromTextArray(
                     headers: ['Destino', 'Fecha', 'Horario', 'Odómetros', 'KM GPS', 'Subsidio (C\$)'],
-                    data: _pastJourneys.map((j) => [
-                      j['destino'],
-                      j['fecha'],
-                      '${j['hora_inicio']} - ${j['hora_fin']}',
-                      '${j['odo_inicio']} -> ${j['odo_fin']}',
-                      '${j['km_gps']} KM',
-                      'C\$ ${(j['subsidio'] as double).toStringAsFixed(2)}',
-                    ]).toList(),
+                    data: _pastJourneys.isNotEmpty
+                        ? _pastJourneys.map((j) => [
+                            j['destino'],
+                            j['fecha'],
+                            '${j['hora_inicio']} - ${j['hora_fin']}',
+                            '${j['odo_inicio']} -> ${j['odo_fin']}',
+                            '${j['km_gps']} KM',
+                            'C\$ ${(j['subsidio'] as double).toStringAsFixed(2)}',
+                          ]).toList()
+                        : [
+                            ['Sin Recorridos Registrados', 'Período Actual', 'N/A', '0.0 -> 0.0', '0.0 KM', 'C\$ 0.00']
+                          ],
                     headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white),
                     headerDecoration: const pw.BoxDecoration(color: PdfColors.blueGrey800),
                     rowDecoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey300))),
@@ -379,13 +369,24 @@ class _SubsidyClaimScreenState extends State<SubsidyClaimScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Conductor: $_driverName', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-                                Text('Vehículo: $_vehiclePlate ($_vehicleModel)', style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11)),
-                              ],
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Conductor: $_driverName', 
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    'Vehículo: $_vehiclePlate ($_vehicleModel)', 
+                                    style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
                             ),
+                            const SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
@@ -412,58 +413,87 @@ class _SubsidyClaimScreenState extends State<SubsidyClaimScreen> {
                   const SizedBox(height: 10),
 
                   // Journeys List Cards
-                  ..._pastJourneys.map((j) => Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1E293B),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xFF334155)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.place_rounded, color: Color(0xFF34D399), size: 16),
-                                const SizedBox(width: 6),
-                                Text(
-                                  j['destino'],
-                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                                ),
-                              ],
-                            ),
-                            Text(
-                              'C\$ ${(j['subsidio'] as double).toStringAsFixed(2)}',
-                              style: const TextStyle(color: Color(0xFF34D399), fontWeight: FontWeight.bold, fontSize: 14),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          '📅 Fecha: ${j['fecha']} | Horario: ${j['hora_inicio']} - ${j['hora_fin']}',
-                          style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Odómetro: ${j['odo_inicio']} KM → ${j['odo_fin']} KM',
-                              style: const TextStyle(color: Color(0xFFCBD5E1), fontSize: 11),
-                            ),
-                            Text(
-                              'GPS App: ${j['km_gps']} KM',
-                              style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  )),
+                  if (_pastJourneys.isEmpty)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFF334155)),
+                      ),
+                      child: const Column(
+                        children: [
+                          Icon(Icons.assignment_outlined, color: Color(0xFF94A3B8), size: 36),
+                          SizedBox(height: 10),
+                          Text(
+                            'No se registran recorridos finalizados en este corte.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 13, fontWeight: FontWeight.w600),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Los viajes que realice en este período quincenal se acumularán automáticamente aquí.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    ..._pastJourneys.map((j) => Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFF334155)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.place_rounded, color: Color(0xFF34D399), size: 16),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    j['destino'],
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                                  ),
+                                ],
+                              ),
+                              Text(
+                                'C\$ ${(j['subsidio'] as double).toStringAsFixed(2)}',
+                                style: const TextStyle(color: Color(0xFF34D399), fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            '📅 Fecha: ${j['fecha']} | Horario: ${j['hora_inicio']} - ${j['hora_fin']}',
+                            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Odómetro: ${j['odo_inicio']} KM → ${j['odo_fin']} KM',
+                                style: const TextStyle(color: Color(0xFFCBD5E1), fontSize: 11),
+                              ),
+                              Text(
+                                'GPS App: ${j['km_gps']} KM',
+                                style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    )),
 
                   const SizedBox(height: 16),
 

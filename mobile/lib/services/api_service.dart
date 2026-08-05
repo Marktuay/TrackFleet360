@@ -30,6 +30,21 @@ class ApiService {
 
   Future<void> logout() async {
     await _storage.delete(key: 'jwt_token');
+    await _storage.delete(key: 'user_data');
+  }
+
+  Future<void> saveUserData(Map<String, dynamic> user) async {
+    await _storage.write(key: 'user_data', value: jsonEncode(user));
+  }
+
+  Future<Map<String, dynamic>?> getUserData() async {
+    final str = await _storage.read(key: 'user_data');
+    if (str != null) {
+      try {
+        return jsonDecode(str);
+      } catch (_) {}
+    }
+    return null;
   }
 
   Options _getAuthOptions(String token) {
@@ -44,6 +59,9 @@ class ApiService {
       });
       final token = response.data['token'];
       await saveToken(token);
+      if (response.data['user'] != null) {
+        await saveUserData(response.data['user']);
+      }
       return response.data;
     } catch (e) {
       // Offline / Demo fallback if backend is unreachable
@@ -59,14 +77,17 @@ class ApiService {
       const demoToken = "demo_driver_jwt_token";
       await saveToken(demoToken);
 
+      final userObj = {
+        'id': 6,
+        'email': email.isNotEmpty ? email : 'conductor@newcenturyni.com',
+        'full_name': derivedName,
+        'role': 'driver'
+      };
+      await saveUserData(userObj);
+
       return {
         'token': demoToken,
-        'user': {
-          'id': 6,
-          'email': email.isNotEmpty ? email : 'conductor@newcenturyni.com',
-          'full_name': derivedName,
-          'role': 'driver'
-        }
+        'user': userObj
       };
     }
   }
