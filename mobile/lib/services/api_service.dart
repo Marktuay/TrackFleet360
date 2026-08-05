@@ -79,7 +79,7 @@ class ApiService {
         plateNumber: 'MOTO-808-NI', 
         brand: 'Yamaha', 
         model: 'FZ-25 250cc', 
-        currentKm: 8500.0, 
+        currentKm: 0.0, 
         status: 'active'
       ),
     ];

@@ -272,8 +272,8 @@ func (m *MemoryStore) seedData() {
 		Year:        2023,
 		VehicleType: models.VehicleTypeMoto,
 		SubsidyRate: models.RateMotoPerKM, // 6.0 C$/km
-		InitialKM:   2000.0,
-		CurrentKM:   8500.0,
+		InitialKM:   0.0,
+		CurrentKM:   0.0,
 		Status:      "active",
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),

@@ -239,7 +239,7 @@ func (h *Handler) ListVehicles(c *gin.Context) {
 				Year:        2023,
 				VehicleType: vType,
 				SubsidyRate: models.RateMotoPerKM,
-				CurrentKM:   8500.0,
+				CurrentKM:   0.0,
 				Status:      "active",
 			}
 			c.JSON(http.StatusOK, []models.Vehicle{singleV})
