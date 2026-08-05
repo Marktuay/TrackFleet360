@@ -217,19 +217,19 @@ func (h *Handler) ListVehicles(c *gin.Context) {
 					return
 				}
 			}
-			// Fallback: Generate single assigned vehicle representation for this driver
+			// Dynamic vehicle representation for this specific driver
 			vType := models.VehicleTypeMoto
 			plate := driver.PlateNumber
 			if plate == "" {
-				plate = "MOTO-808-NI"
+				plate = "PLACA-PENDIENTE"
 			}
 			brand := driver.Company
 			if brand == "" || brand == "Newcentury NI" {
-				brand = "Yamaha"
+				brand = "Vehículo Corporativo"
 			}
 			modelName := driver.VehicleSubtype
 			if modelName == "" {
-				modelName = "FZ-25 250cc"
+				modelName = "Asignado"
 			}
 			singleV := models.Vehicle{
 				ID:          1000 + driver.ID,
@@ -246,17 +246,20 @@ func (h *Handler) ListVehicles(c *gin.Context) {
 			return
 		}
 
-		// Safety net for driver role: return at most 1 vehicle matching motorcycle if present
-		for _, v := range vehicles {
-			if strings.EqualFold(v.PlateNumber, "MOTO-808-NI") {
-				c.JSON(http.StatusOK, []models.Vehicle{v})
-				return
-			}
+		// Fallback for driver account without registered driver record
+		cleanV := models.Vehicle{
+			ID:          2000 + userID,
+			PlateNumber: "PLACA-PENDIENTE",
+			Brand:       "Vehículo Corporativo",
+			Model:       "Asignado",
+			Year:        2023,
+			VehicleType: models.VehicleTypeMoto,
+			SubsidyRate: models.RateMotoPerKM,
+			CurrentKM:   0.0,
+			Status:      "active",
 		}
-		if len(vehicles) > 0 {
-			c.JSON(http.StatusOK, []models.Vehicle{vehicles[0]})
-			return
-		}
+		c.JSON(http.StatusOK, []models.Vehicle{cleanV})
+		return
 	}
 
 	c.JSON(http.StatusOK, vehicles)

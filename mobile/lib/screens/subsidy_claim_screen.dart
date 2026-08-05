@@ -18,9 +18,9 @@ class _SubsidyClaimScreenState extends State<SubsidyClaimScreen> {
 
   final String _cutoffName = "Corte Quincenal (1 a 15 de Julio 2026)";
   String _driverName = "Conductor Registrado";
-  final String _licenseNo = "LIC-774920";
-  final String _vehiclePlate = "MOTO-808-NI";
-  final String _vehicleModel = "Yamaha FZ-25 250cc";
+  final String _licenseNo = "LIC-NICA";
+  final String _vehiclePlate = "PLACA-PENDIENTE";
+  final String _vehicleModel = "Vehículo Corporativo";
   final double _subsidyRate = 6.0; // 6 C$/km for motorcycles
 
   List<Map<String, dynamic>> _pastJourneys = [
