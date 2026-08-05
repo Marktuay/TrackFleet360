@@ -281,11 +281,13 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Color(0xFF0284C7)))
-          : Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+          : SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                   // Banner button for PDF Subsidies Payment Request (Corte Pasado)
                   GestureDetector(
                     onTap: () {
@@ -595,6 +597,7 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
                 ],
               ),
             ),
+          ),
     );
   }
 }
