@@ -1,16 +1,17 @@
 [Unit]
-Description=TrackFleet360 Next.js Frontend Dashboard Service
+Description=TrackFleet360 Next.js Frontend Web Service
 After=network.target
 
 [Service]
 Type=simple
 User=informatica
 WorkingDirectory=/home/informatica/TrackFleet360/frontend
-ExecStart=/usr/bin/npx next start -p 3005
+ExecStart=/usr/bin/npm run start -- -p 3000
 Restart=always
-RestartSec=5
-Environment=PORT=3005
+RestartSec=3
 Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=NEXT_PUBLIC_API_URL=https://trackfleet360.newcenturyni.com/api/v1
 
 [Install]
 WantedBy=multi-user.target

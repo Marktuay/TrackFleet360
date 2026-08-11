@@ -71,11 +71,11 @@ export NEXT_PUBLIC_API_URL="https://trackfleet360.newcenturyni.com/api/v1"
 npm install
 npm run build
 
-echo "🔄 Reiniciando proceso PM2 del Frontend..."
-pm2 delete trackfleet-frontend || true
-pm2 start npm --name "trackfleet-frontend" -- run start -- -p 3000
-pm2 save
-sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u $USER --hp $HOME || true
+echo "🔄 Configurando servicio Systemd nativo para el Frontend Next.js..."
+sudo cp "${TARGET_DIR}/frontend/deploy/trackfleet360-frontend.service" /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable trackfleet360-frontend
+sudo systemctl restart trackfleet360-frontend
 
 # 7. Configurar Nginx para Frontend y Backend con SSL
 sudo python3 "${TARGET_DIR}/frontend/deploy/fix_nginx.py"
