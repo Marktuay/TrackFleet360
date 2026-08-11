@@ -72,65 +72,7 @@ pm2 save
 sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u $USER --hp $HOME || true
 
 # 7. Configurar Nginx para Frontend (app.newcenturyni.com) con SSL
-echo "🌐 Configurando Nginx para app.newcenturyni.com..."
-
-CERT_PATH=$(sudo ls -d /etc/letsencrypt/live/app.newcenturyni.com* 2>/dev/null | head -n 1)
-
-if [ -n "$CERT_PATH" ] && [ -f "$CERT_PATH/fullchain.pem" ]; then
-    echo "🔒 Aplicando certificado SSL encontrado en $CERT_PATH..."
-    sudo tee /etc/nginx/sites-available/app.newcenturyni.com > /dev/null <<EOF
-server {
-    listen 80;
-    server_name app.newcenturyni.com;
-    return 301 https://\$host\$request_uri;
-}
-
-server {
-    listen 443 ssl;
-    server_name app.newcenturyni.com;
-
-    ssl_certificate ${CERT_PATH}/fullchain.pem;
-    ssl_certificate_key ${CERT_PATH}/privkey.pem;
-
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host \$host;
-        proxy_cache_bypass \$http_upgrade;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-}
-EOF
-else
-    echo "⚠️ Certificado SSL aún no detectado. Aplicando versión HTTP en puerto 80..."
-    sudo tee /etc/nginx/sites-available/app.newcenturyni.com > /dev/null <<EOF
-server {
-    listen 80;
-    server_name app.newcenturyni.com;
-
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host \$host;
-        proxy_cache_bypass \$http_upgrade;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-}
-EOF
-    sudo certbot --nginx -d app.newcenturyni.com --non-interactive --agree-tos -m informatica@newcenturyni.com --redirect || true
-fi
-
-sudo ln -sf /etc/nginx/sites-available/app.newcenturyni.com /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl reload nginx
+sudo bash "${TARGET_DIR}/frontend/deploy/configure_nginx_ssl.sh"
 
 echo "✅ DESPLIEGUE UNIFICADO COMPLETADO CON ÉXITO!"
 echo "🌐 Panel Web: https://app.newcenturyni.com"
