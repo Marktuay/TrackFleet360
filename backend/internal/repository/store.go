@@ -114,6 +114,18 @@ func (m *MemoryStore) seedData() {
 	}
 	m.users[7] = infAdminUser
 
+	ncAdminUser := &models.User{
+		ID:           8,
+		Email:        "admin@newcenturyni.com",
+		PasswordHash: hashPassword("admin123"),
+		FullName:     "Newcentury Administrator",
+		Role:         models.RoleAdmin,
+		Active:       true,
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
+	}
+	m.users[8] = ncAdminUser
+
 	supervisorUser := &models.User{
 		ID:           2,
 		Email:        "supervisor@trackfleet360.com",
@@ -375,8 +387,9 @@ func (m *MemoryStore) GetUserByEmail(ctx context.Context, email string) (*models
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
+	cleanEmail := strings.TrimSpace(email)
 	for _, u := range m.users {
-		if u.Email == email {
+		if strings.EqualFold(strings.TrimSpace(u.Email), cleanEmail) {
 			return u, nil
 		}
 	}
