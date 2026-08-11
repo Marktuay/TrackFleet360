@@ -72,20 +72,13 @@ pm2 save
 sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u $USER --hp $HOME || true
 
 # 7. Configurar Nginx para Frontend (app.newcenturyni.com) con SSL
-echo "🌐 Configurando Nginx con SSL HTTPS para app.newcenturyni.com..."
+echo "🌐 Configurando Nginx para app.newcenturyni.com..."
 
-# Buscar certificado existente o generar uno nuevo
-if [ ! -f "/etc/letsencrypt/live/app.newcenturyni.com/fullchain.pem" ]; then
-    echo "🔒 Solicitando nuevo certificado SSL Certbot..."
-    sudo certbot certonly --nginx -d app.newcenturyni.com --non-interactive --agree-tos -m informatica@newcenturyni.com || true
-fi
-
-# Buscar directorio de certificado (ej. /etc/letsencrypt/live/app.newcenturyni.com)
-CERT_PATH=$(ls -d /etc/letsencrypt/live/app.newcenturyni.com* 2>/dev/null | head -n 1)
+CERT_PATH=$(sudo ls -d /etc/letsencrypt/live/app.newcenturyni.com* 2>/dev/null | head -n 1)
 
 if [ -n "$CERT_PATH" ] && [ -f "$CERT_PATH/fullchain.pem" ]; then
     echo "🔒 Aplicando certificado SSL encontrado en $CERT_PATH..."
-    sudo bash -c "cat << 'EOF' > /etc/nginx/sites-available/app.newcenturyni.com
+    sudo tee /etc/nginx/sites-available/app.newcenturyni.com > /dev/null <<EOF
 server {
     listen 80;
     server_name app.newcenturyni.com;
@@ -103,7 +96,7 @@ server {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection \"upgrade\";
+        proxy_set_header Connection "upgrade";
         proxy_set_header Host \$host;
         proxy_cache_bypass \$http_upgrade;
         proxy_set_header X-Real-IP \$remote_addr;
@@ -111,10 +104,10 @@ server {
         proxy_set_header X-Forwarded-Proto \$scheme;
     }
 }
-EOF"
+EOF
 else
-    echo "⚠️ Certificado SSL aún no generado. Aplicando versión HTTP en puerto 80..."
-    sudo bash -c 'cat << "EOF" > /etc/nginx/sites-available/app.newcenturyni.com
+    echo "⚠️ Certificado SSL aún no detectado. Aplicando versión HTTP en puerto 80..."
+    sudo tee /etc/nginx/sites-available/app.newcenturyni.com > /dev/null <<EOF
 server {
     listen 80;
     server_name app.newcenturyni.com;
@@ -122,16 +115,17 @@ server {
     location / {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
     }
 }
-EOF'
+EOF
+    sudo certbot --nginx -d app.newcenturyni.com --non-interactive --agree-tos -m informatica@newcenturyni.com --redirect || true
 fi
 
 sudo ln -sf /etc/nginx/sites-available/app.newcenturyni.com /etc/nginx/sites-enabled/
