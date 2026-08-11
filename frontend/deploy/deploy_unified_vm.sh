@@ -24,15 +24,20 @@ echo "y" | sudo ufw enable || true
 
 # 3. Instalar Node.js 20 LTS & PM2
 echo "📦 Instalando/Verificando Node.js 20 LTS..."
+# Limpiar symlink roto de npm en /usr/bin/npm si existía
+if [ -L "/usr/bin/npm" ]; then
+    sudo rm -f /usr/bin/npm
+fi
+
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt-get install -y nodejs build-essential
 
-# Exportar rutas globales para sudo y npm
-export PATH=$PATH:/usr/local/bin:/usr/bin
+# Asegurar PATH
+export PATH=$PATH:/usr/local/bin:/usr/bin:/usr/local/go/bin
 
 if ! command -v pm2 &> /dev/null; then
     echo "📦 Instalando PM2 Manager..."
-    sudo env "PATH=$PATH" npm install -g pm2 || true
+    sudo npm install -g pm2 --force || true
 fi
 
 # 4. Clonar / Actualizar Repositorio
@@ -49,7 +54,11 @@ fi
 # 5. Compilar y Desplegar Backend Go (api/v1)
 echo "⚙️ Compilando API Backend Go..."
 cd "${TARGET_DIR}/backend"
-/usr/local/go/bin/go build -o trackfleet360-backend ./cmd/api
+GO_BIN=$(which go 2>/dev/null || echo "/usr/local/go/bin/go")
+if [ ! -x "$GO_BIN" ] && [ -f "/usr/bin/go" ]; then
+    GO_BIN="/usr/bin/go"
+fi
+"$GO_BIN" build -o trackfleet360-backend ./cmd/api
 sudo cp "${TARGET_DIR}/backend/deploy/trackfleet360-backend.service" /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable trackfleet360-backend
