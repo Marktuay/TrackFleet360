@@ -24,13 +24,13 @@ echo "y" | sudo ufw enable || true
 
 # 3. Instalar Node.js 20 LTS & PM2
 echo "📦 Instalando/Verificando Node.js 20 LTS..."
-# Limpiar symlink roto de npm en /usr/bin/npm si existía
-if [ -L "/usr/bin/npm" ]; then
-    sudo rm -f /usr/bin/npm
-fi
-
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt-get install -y nodejs build-essential
+
+# Asegurar ejecutable npm en /usr/bin/npm
+if [ -f "/usr/lib/node_modules/npm/bin/npm-cli.js" ]; then
+    sudo ln -sf /usr/lib/node_modules/npm/bin/npm-cli.js /usr/bin/npm
+fi
 
 # Asegurar PATH
 export PATH=$PATH:/usr/local/bin:/usr/bin:/usr/local/go/bin
