@@ -32,7 +32,7 @@ if not cert_path:
 print(f"🔑 Using SSL Cert: {cert_path}")
 print(f"🔑 Using SSL Key: {key_path}")
 
-# 2. Write Nginx site for app.newcenturyni.com
+# 2. Write Nginx site for app.newcenturyni.com (Web + API)
 app_nginx_config = f"""server {{
     listen 80;
     server_name app.newcenturyni.com;
@@ -46,7 +46,20 @@ server {{
     ssl_certificate {cert_path};
     ssl_certificate_key {key_path};
 
-    # Next.js Web App on Port 3000
+    # API Backend Go en Puerto 8085
+    location /api/ {{
+        proxy_pass http://127.0.0.1:8085/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }}
+
+    # Next.js Web App en Puerto 3000
     location / {{
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
@@ -64,7 +77,7 @@ server {{
 with open("/etc/nginx/sites-available/app.newcenturyni.com", "w") as f:
     f.write(app_nginx_config)
 
-# 3. Write Nginx site for trackfleet360.newcenturyni.com
+# 3. Write Nginx site for trackfleet360.newcenturyni.com (API)
 backend_nginx_config = f"""server {{
     listen 80;
     server_name trackfleet360.newcenturyni.com;
