@@ -96,9 +96,9 @@ sudo ln -sf /etc/nginx/sites-available/app.newcenturyni.com /etc/nginx/sites-ena
 sudo nginx -t
 sudo systemctl reload nginx
 
-# 8. Certificados SSL con Certbot para app.newcenturyni.com
-echo "🔒 Solicitando/Renovando certificado SSL para app.newcenturyni.com..."
-sudo certbot --nginx -d app.newcenturyni.com --non-interactive --agree-tos -m informatica@newcenturyni.com || true
+# 8. Certificados SSL con Certbot para ambos dominios
+echo "🔒 Solicitando/Renovando certificado SSL unificado para app.newcenturyni.com y trackfleet360.newcenturyni.com..."
+sudo certbot --nginx -d app.newcenturyni.com -d trackfleet360.newcenturyni.com --expand --non-interactive --agree-tos -m informatica@newcenturyni.com --redirect || true
 
 sudo nginx -t
 sudo systemctl reload nginx
