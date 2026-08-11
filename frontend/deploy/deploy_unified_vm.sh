@@ -98,7 +98,8 @@ sudo systemctl reload nginx
 
 # 8. Certificados SSL con Certbot
 echo "🔒 Obteniendo/Renovando certificado SSL para app.newcenturyni.com..."
-sudo certbot --nginx -d app.newcenturyni.com --non-interactive --agree-tos -m informatica@newcenturyni.com || true
+sudo certbot --nginx -d app.newcenturyni.com --non-interactive --agree-tos -m informatica@newcenturyni.com --redirect || true
+sudo systemctl reload nginx
 
 echo "✅ DESPLIEGUE UNIFICADO COMPLETADO CON ÉXITO!"
 echo "🌐 Panel Web: https://app.newcenturyni.com"
