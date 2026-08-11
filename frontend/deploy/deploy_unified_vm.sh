@@ -77,8 +77,8 @@ pm2 start npm --name "trackfleet-frontend" -- run start -- -p 3000
 pm2 save
 sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u $USER --hp $HOME || true
 
-# 7. Configurar Nginx para Frontend (app.newcenturyni.com) con SSL
-sudo bash "${TARGET_DIR}/frontend/deploy/configure_nginx_ssl.sh"
+# 7. Configurar Nginx para Frontend y Backend con SSL
+sudo python3 "${TARGET_DIR}/frontend/deploy/fix_nginx.py"
 
 echo "✅ DESPLIEGUE UNIFICADO COMPLETADO CON ÉXITO!"
 echo "🌐 Panel Web: https://app.newcenturyni.com"
