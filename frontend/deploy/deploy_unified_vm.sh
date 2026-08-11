@@ -96,9 +96,42 @@ sudo ln -sf /etc/nginx/sites-available/app.newcenturyni.com /etc/nginx/sites-ena
 sudo nginx -t
 sudo systemctl reload nginx
 
-# 8. Certificados SSL con Certbot para ambos dominios
-echo "🔒 Solicitando/Renovando certificado SSL unificado para app.newcenturyni.com y trackfleet360.newcenturyni.com..."
-sudo certbot --nginx -d app.newcenturyni.com -d trackfleet360.newcenturyni.com --expand --non-interactive --agree-tos -m informatica@newcenturyni.com --redirect || true
+# 8. Certificados SSL con Certbot para app.newcenturyni.com
+echo "🔒 Solicitando/Verificando certificado SSL para app.newcenturyni.com..."
+sudo certbot certonly --nginx -d app.newcenturyni.com --non-interactive --agree-tos -m informatica@newcenturyni.com || true
+
+CERT_DIR=$(ls -d /etc/letsencrypt/live/app.newcenturyni.com* 2>/dev/null | tail -n 1)
+
+if [ -n "$CERT_DIR" ] && [ -f "$CERT_DIR/fullchain.pem" ]; then
+    echo "🔒 Configurando Nginx con el certificado SSL encontrado en $CERT_DIR..."
+    sudo bash -c "cat << EOF > /etc/nginx/sites-available/app.newcenturyni.com
+server {
+    listen 80;
+    server_name app.newcenturyni.com;
+    return 301 https://\$host\$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name app.newcenturyni.com;
+
+    ssl_certificate $CERT_DIR/fullchain.pem;
+    ssl_certificate_key $CERT_DIR/privkey.pem;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection \"upgrade\";
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+EOF"
+fi
 
 sudo nginx -t
 sudo systemctl reload nginx
