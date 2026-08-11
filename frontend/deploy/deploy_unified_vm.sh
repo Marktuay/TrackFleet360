@@ -22,14 +22,17 @@ sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
 echo "y" | sudo ufw enable || true
 
-# 3. Instalar Node.js 20 LTS, npm & PM2
-echo "📦 Instalando/Verificando Node.js 20 LTS y npm..."
+# 3. Instalar Node.js 20 LTS & PM2
+echo "📦 Instalando/Verificando Node.js 20 LTS..."
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt-get install -y nodejs npm build-essential
+sudo apt-get install -y nodejs build-essential
+
+# Exportar rutas globales para sudo y npm
+export PATH=$PATH:/usr/local/bin:/usr/bin
 
 if ! command -v pm2 &> /dev/null; then
     echo "📦 Instalando PM2 Manager..."
-    sudo npm install -g pm2 || sudo apt-get install -y pm2 || true
+    sudo env "PATH=$PATH" npm install -g pm2 || true
 fi
 
 # 4. Clonar / Actualizar Repositorio
