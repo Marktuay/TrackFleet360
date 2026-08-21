@@ -3,6 +3,7 @@ package middleware
 import (
 	"errors"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -10,7 +11,12 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var JWTSecret = []byte("trackfleet360_secret_key_prod_2026")
+func getJWTSecret() []byte {
+	if secret := os.Getenv("JWT_SECRET"); secret != "" {
+		return []byte(secret)
+	}
+	return []byte("trackfleet360_secret_key_prod_2026")
+}
 
 type Claims struct {
 	UserID   int    `json:"user_id"`
@@ -33,7 +39,7 @@ func GenerateToken(userID int, email string, role string, driverID int) (string,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(JWTSecret)
+	return token.SignedString(getJWTSecret())
 }
 
 func ValidateToken(tokenString string) (*Claims, error) {
@@ -41,7 +47,7 @@ func ValidateToken(tokenString string) (*Claims, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
 		}
-		return JWTSecret, nil
+		return getJWTSecret(), nil
 	})
 
 	if err != nil {
