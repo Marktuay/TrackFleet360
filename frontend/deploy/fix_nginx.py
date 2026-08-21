@@ -46,6 +46,12 @@ server {{
     ssl_certificate {cert_path};
     ssl_certificate_key {key_path};
 
+    # Enterprise Security Headers
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
     # API Backend Go en Puerto 8085
     location /api/ {{
         proxy_pass http://127.0.0.1:8085/api/;
