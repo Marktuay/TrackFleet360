@@ -24,4 +24,20 @@ sudo apt-get install -y fail2ban
 sudo systemctl enable fail2ban
 sudo systemctl restart fail2ban
 
+# 5. Desactivar TCP Timestamps (OpenVAS Low Finding)
+sudo sysctl -w net.ipv4.tcp_timestamps=0 || true
+if ! grep -q "net.ipv4.tcp_timestamps" /etc/sysctl.conf; then
+    echo "net.ipv4.tcp_timestamps = 0" | sudo tee -a /etc/sysctl.conf
+else
+    sudo sed -i 's/.*net.ipv4.tcp_timestamps.*/net.ipv4.tcp_timestamps = 0/' /etc/sysctl.conf
+fi
+
+# 6. Desactivar algoritmos MAC débiles en SSH (OpenVAS Low Finding)
+if ! grep -q "^MACs" /etc/ssh/sshd_config; then
+    echo "MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com" | sudo tee -a /etc/ssh/sshd_config
+else
+    sudo sed -i 's/^MACs.*/MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com/' /etc/ssh/sshd_config
+fi
+sudo systemctl restart sshd 2>/dev/null || sudo systemctl restart ssh 2>/dev/null || true
+
 echo "✅ Blindaje de servidor completado con éxito."
