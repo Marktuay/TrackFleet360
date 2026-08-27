@@ -101,7 +101,7 @@ class ApiService {
         return list.map((item) => Vehicle.fromJson(item)).toList();
       }
     } catch (e) {
-      print('Error en API getVehicles: $e');
+      // API fallback
     }
     // Clean fallback for account without assigned plate
     return [

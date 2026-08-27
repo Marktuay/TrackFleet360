@@ -1,11 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
-import 'login_screen.dart';
 import 'vehicle_select_screen.dart';
 
 class ActiveJourneyScreen extends StatefulWidget {
@@ -73,10 +71,11 @@ class _ActiveJourneyScreenState extends State<ActiveJourneyScreen> {
         // Periodic GPS tracking ping every 10 seconds
         if (_secondsElapsed % 10 == 0) {
           try {
-            Position? pos = await Geolocator.getCurrentPosition(
+            Position pos = await Geolocator.getCurrentPosition(
               desiredAccuracy: LocationAccuracy.high,
             ).timeout(const Duration(seconds: 4), onTimeout: () async {
-              return await Geolocator.getLastKnownPosition() ??
+              final lastKnown = await Geolocator.getLastKnownPosition();
+              return lastKnown ??
                   Position(
                     latitude: widget.journey.startLat,
                     longitude: widget.journey.startLng,
@@ -91,18 +90,16 @@ class _ActiveJourneyScreenState extends State<ActiveJourneyScreen> {
                   );
             });
 
-            if (pos != null) {
-              setState(() {
-                _gpsPointsCaptured++;
-              });
+            setState(() {
+              _gpsPointsCaptured++;
+            });
 
-              _apiService.sendGPSPoint(
-                widget.journey.id,
-                pos.latitude,
-                pos.longitude,
-                pos.speed,
-              );
-            }
+            _apiService.sendGPSPoint(
+              widget.journey.id,
+              pos.latitude,
+              pos.longitude,
+              pos.speed,
+            );
           } catch (e) {
             // Silently fallback if GPS temporarily unavailable
           }
@@ -175,13 +172,11 @@ class _ActiveJourneyScreenState extends State<ActiveJourneyScreen> {
     double endLng = widget.journey.startLng;
 
     try {
-      Position? finalPos = await Geolocator.getCurrentPosition(
+      Position finalPos = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-      if (finalPos != null) {
-        endLat = finalPos.latitude;
-        endLng = finalPos.longitude;
-      }
+      endLat = finalPos.latitude;
+      endLng = finalPos.longitude;
     } catch (e) {
       // Use last start position as fallback
     }

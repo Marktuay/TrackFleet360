@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 class User {
   final int id;
   final String email;
@@ -96,9 +94,9 @@ class Journey {
       vehicleId: json['vehicle_id'] ?? 0,
       startTime: json['start_time'] ?? '',
       endTime: json['end_time'],
-      destination: json['destination'] ?? 'Destino General',
-      startLat: (json['start_lat'] ?? 12.1364).toDouble(),
-      startLng: (json['start_lng'] ?? -86.2514).toDouble(),
+      destination: json['destination'] ?? '',
+      startLat: (json['start_lat'] ?? 0.0).toDouble(),
+      startLng: (json['start_lng'] ?? 0.0).toDouble(),
       startKm: (json['start_km'] ?? 0.0).toDouble(),
       endKm: (json['end_km'] ?? 0.0).toDouble(),
       declaredDistKm: (json['declared_dist_km'] ?? 0.0).toDouble(),

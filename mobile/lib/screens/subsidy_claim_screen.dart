@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import '../models/models.dart';
 import '../services/api_service.dart';
 
 class SubsidyClaimScreen extends StatefulWidget {
-  const SubsidyClaimScreen({Key? key}) : super(key: key);
+  const SubsidyClaimScreen({super.key});
 
   @override
   State<SubsidyClaimScreen> createState() => _SubsidyClaimScreenState();
@@ -23,7 +22,7 @@ class _SubsidyClaimScreenState extends State<SubsidyClaimScreen> {
   String _vehicleModel = "Vehículo Corporativo";
   final double _subsidyRate = 6.0; // 6 C$/km for motorcycles
 
-  List<Map<String, dynamic>> _pastJourneys = [];
+  final List<Map<String, dynamic>> _pastJourneys = [];
 
   @override
   void initState() {
@@ -100,7 +99,7 @@ class _SubsidyClaimScreenState extends State<SubsidyClaimScreen> {
                   pw.SizedBox(height: 16),
 
                   // Table
-                  pw.Table.fromTextArray(
+                  pw.TableHelper.fromTextArray(
                     headers: ['Destino', 'Fecha', 'Horario', 'Odómetros', 'KM GPS', 'Subsidio (C\$)'],
                     data: _pastJourneys.isNotEmpty
                         ? _pastJourneys.map((j) => [
