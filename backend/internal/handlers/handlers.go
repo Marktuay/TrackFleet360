@@ -481,7 +481,20 @@ func (h *Handler) UploadPhoto(c *gin.Context) {
 		return
 	}
 
-	filename := fmt.Sprintf("journey_%d_%d_%s", journeyID, time.Now().Unix(), filepath.Base(file.Filename))
+	// Validar tamaño máximo (10 MB)
+	if file.Size > 10*1024*1024 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "El archivo excede el tamaño máximo permitido de 10MB"})
+		return
+	}
+
+	// Validar extensión de imagen
+	ext := strings.ToLower(filepath.Ext(file.Filename))
+	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".webp" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Formato de imagen no permitido. Solo JPG, PNG o WEBP"})
+		return
+	}
+
+	filename := fmt.Sprintf("journey_%d_%d%s", journeyID, time.Now().Unix(), ext)
 	savePath := filepath.Join("uploads", filename)
 
 	if err := c.SaveUploadedFile(file, savePath); err != nil {
