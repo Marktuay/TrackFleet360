@@ -335,73 +335,73 @@ class _VehicleSelectScreenState extends State<VehicleSelectScreen> {
                     style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
                   ),
                   const SizedBox(height: 12),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: _vehicles.length,
-                      itemBuilder: (context, index) {
-                        final v = _vehicles[index];
-                        final isSelected = _selectedVehicle?.id == v.id;
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _selectedVehicle = v;
-                              _startKmController.text = v.currentKm.toString();
-                            });
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: isSelected ? const Color(0xFF0369A1).withOpacity(0.3) : const Color(0xFF1E293B),
-                              border: Border.all(
-                                color: isSelected ? const Color(0xFF38BDF8) : const Color(0xFF334155),
-                                width: isSelected ? 2 : 1,
-                              ),
-                              borderRadius: BorderRadius.circular(16),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _vehicles.length,
+                    itemBuilder: (context, index) {
+                      final v = _vehicles[index];
+                      final isSelected = _selectedVehicle?.id == v.id;
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedVehicle = v;
+                            _startKmController.text = v.currentKm.toString();
+                          });
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: isSelected ? const Color(0xFF0369A1).withOpacity(0.3) : const Color(0xFF1E293B),
+                            border: Border.all(
+                              color: isSelected ? const Color(0xFF38BDF8) : const Color(0xFF334155),
+                              width: isSelected ? 2 : 1,
                             ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF0F172A),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Icon(
-                                    v.brand.toLowerCase().contains('yamaha') ? Icons.two_wheeler : Icons.directions_car,
-                                    color: const Color(0xFF38BDF8),
-                                    size: 28,
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Placa: ${v.plateNumber}',
-                                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                                      ),
-                                      Text(
-                                        '${v.brand} ${v.model}',
-                                        style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Odómetro: ${v.currentKm} KM',
-                                        style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 12, fontWeight: FontWeight.w600),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                if (isSelected)
-                                  const Icon(Icons.check_circle_rounded, color: Color(0xFF38BDF8), size: 24),
-                              ],
-                            ),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                        );
-                      },
-                    ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0F172A),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  v.brand.toLowerCase().contains('yamaha') ? Icons.two_wheeler : Icons.directions_car,
+                                  color: const Color(0xFF38BDF8),
+                                  size: 28,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Placa: ${v.plateNumber}',
+                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                                    ),
+                                    Text(
+                                      '${v.brand} ${v.model}',
+                                      style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Odómetro: ${v.currentKm} KM',
+                                      style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 12, fontWeight: FontWeight.w600),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (isSelected)
+                                const Icon(Icons.check_circle_rounded, color: Color(0xFF38BDF8), size: 24),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 12),
 
