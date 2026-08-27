@@ -4,7 +4,7 @@ set -e
 echo "🛡️ Ejecutando blindaje de seguridad en instance-apitrackfleet360..."
 
 # 1. Eliminar cualquier archivo sospechoso en /tmp
-sudo pkill -9 -f "/tmp/" || true
+sudo pkill -9 -f "/tmp/dashboard" 2>/dev/null || true
 sudo rm -rf /tmp/dashboard /tmp/v.json /tmp/v* /tmp/*.sh /tmp/*.py /tmp/*.bin 2>/dev/null || true
 
 # 2. Configurar permisos restringidos y noexec en /tmp
@@ -20,9 +20,10 @@ sudo ufw allow 443/tcp
 sudo ufw --force enable || true
 
 # 4. Instalar y activar Fail2Ban contra fuerza bruta
-sudo apt-get install -y fail2ban
-sudo systemctl enable fail2ban
-sudo systemctl restart fail2ban
+sudo apt-get update -y || true
+sudo apt-get install -y fail2ban || true
+sudo systemctl enable fail2ban 2>/dev/null || true
+sudo systemctl restart fail2ban 2>/dev/null || true
 
 # 5. Desactivar TCP Timestamps (OpenVAS Low Finding)
 sudo sysctl -w net.ipv4.tcp_timestamps=0 || true
