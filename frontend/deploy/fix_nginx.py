@@ -32,8 +32,8 @@ if not cert_path:
 print(f"🔑 Using SSL Cert: {cert_path}")
 print(f"🔑 Using SSL Key: {key_path}")
 
-# 2. Write Nginx site for app.newcenturyni.com (Web + API)
-app_nginx_config = f"""server {{
+if cert_path and key_path:
+    app_nginx_config = f"""server {{
     listen 80;
     server_name app.newcenturyni.com;
     return 301 https://$host$request_uri;
@@ -84,12 +84,50 @@ server {{
     }}
 }}
 """
+else:
+    app_nginx_config = f"""server {{
+    listen 80;
+    server_name app.newcenturyni.com _;
+
+    # Enterprise Security Headers
+    server_tokens off;
+
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    location /api/ {{
+        proxy_pass http://127.0.0.1:8085/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }}
+
+    location / {{
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }}
+}}
+"""
 
 with open("/etc/nginx/sites-available/app.newcenturyni.com", "w") as f:
     f.write(app_nginx_config)
 
 # 3. Write Nginx site for trackfleet360.newcenturyni.com (API)
-backend_nginx_config = f"""server {{
+if cert_path and key_path:
+    backend_nginx_config = f"""server {{
     listen 80;
     server_name trackfleet360.newcenturyni.com;
     return 301 https://$host$request_uri;
@@ -101,6 +139,30 @@ server {{
 
     ssl_certificate {cert_path};
     ssl_certificate_key {key_path};
+
+    location / {{
+        proxy_pass http://127.0.0.1:8085;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }}
+
+    location /uploads/ {{
+        alias /home/informatica/TrackFleet360/backend/uploads/;
+        expires 30d;
+        add_header Cache-Control "public, no-transform";
+    }}
+}}
+"""
+else:
+    backend_nginx_config = f"""server {{
+    listen 80;
+    server_name trackfleet360.newcenturyni.com;
 
     location / {{
         proxy_pass http://127.0.0.1:8085;
