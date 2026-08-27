@@ -46,11 +46,16 @@ server {{
     ssl_certificate {cert_path};
     ssl_certificate_key {key_path};
 
-    # Enterprise Security Headers
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    # Enterprise Security Headers (OWASP & ZAP Compliant)
+    server_tokens off;
+    proxy_hide_header X-Powered-By;
+    proxy_hide_header Server;
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'self';" always;
 
     # API Backend Go en Puerto 8085
     location /api/ {{
