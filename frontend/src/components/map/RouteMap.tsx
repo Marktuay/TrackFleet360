@@ -56,10 +56,10 @@ export default function RouteMap({
       });
       leafletInstance.current = map;
 
-      // Esri World Dark Gray Canvas tiles (100% free, no API key required, dark theme)
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-        attribution: '&copy; <a href="https://www.esri.com/">Esri</a> & OpenStreetMap Nicaragua',
-        maxZoom: 16,
+      // OpenStreetMap standard tiles (100% free, no API key required, maxZoom 19)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19,
       }).addTo(map);
 
       const bounds: [number, number][] = [];
@@ -69,9 +69,9 @@ export default function RouteMap({
         bounds.push([startLat, startLng]);
         const startIcon = L.divIcon({
           className: 'custom-start-marker',
-          html: `<div style="background-color: #10b981; width: 16px; height: 16px; border-radius: 50%; border: 3px solid #ffffff; box-shadow: 0 0 12px #10b981;"></div>`,
-          iconSize: [16, 16],
-          iconAnchor: [8, 8],
+          html: `<div style="background-color: #10b981; width: 18px; height: 18px; border-radius: 50%; border: 3px solid #ffffff; box-shadow: 0 0 12px #10b981;"></div>`,
+          iconSize: [18, 18],
+          iconAnchor: [9, 9],
         });
         L.marker([startLat, startLng], { icon: startIcon })
           .addTo(map)
@@ -83,9 +83,9 @@ export default function RouteMap({
         bounds.push([endLat, endLng]);
         const endIcon = L.divIcon({
           className: 'custom-end-marker',
-          html: `<div style="background-color: #ef4444; width: 16px; height: 16px; border-radius: 50%; border: 3px solid #ffffff; box-shadow: 0 0 12px #ef4444;"></div>`,
-          iconSize: [16, 16],
-          iconAnchor: [8, 8],
+          html: `<div style="background-color: #ef4444; width: 18px; height: 18px; border-radius: 50%; border: 3px solid #ffffff; box-shadow: 0 0 12px #ef4444;"></div>`,
+          iconSize: [18, 18],
+          iconAnchor: [9, 9],
         });
         L.marker([endLat, endLng], { icon: endIcon })
           .addTo(map)
@@ -106,9 +106,9 @@ export default function RouteMap({
 
       if (polylineCoords.length > 1) {
         L.polyline(polylineCoords, {
-          color: '#38bdf8', // Sky Blue
-          weight: 4,
-          opacity: 0.85,
+          color: '#0284c7', // Sky Blue
+          weight: 5,
+          opacity: 0.9,
           dashArray: '8, 8',
         }).addTo(map);
       }
@@ -117,6 +117,15 @@ export default function RouteMap({
       if (bounds.length > 0) {
         map.fitBounds(bounds, { padding: [40, 40] });
       }
+
+      // Invalidate size to ensure Leaflet expands to 100% of container dimensions
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 150);
+
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 500);
     });
 
     return () => {
