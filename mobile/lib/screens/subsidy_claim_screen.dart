@@ -22,7 +22,7 @@ class _SubsidyClaimScreenState extends State<SubsidyClaimScreen> {
   final String _licenseNo = "LIC-NICA";
   String _vehiclePlate = "PLACA-PENDIENTE";
   String _vehicleModel = "Vehículo Corporativo";
-  final double _subsidyRate = 6.0; // 6 C$/km for motorcycles
+  double _subsidyRate = 10.0; // Default 10 C$/km for Autos, 6 C$/km for Motos
 
   final List<Map<String, dynamic>> _pastJourneys = [];
 
@@ -40,8 +40,36 @@ class _SubsidyClaimScreenState extends State<SubsidyClaimScreen> {
 
     final vehicles = await _apiService.getVehicles();
     if (vehicles.isNotEmpty) {
-      _vehiclePlate = vehicles.first.plateNumber;
-      _vehicleModel = "${vehicles.first.brand} ${vehicles.first.model}".trim();
+      final v = vehicles.first;
+      _vehiclePlate = v.plateNumber;
+      _vehicleModel = "${v.brand} ${v.model}".trim();
+      final typeStr = "${v.vehicleType} ${v.brand} ${v.model}".toLowerCase();
+      if (typeStr.contains('moto')) {
+        _subsidyRate = 6.0;
+      } else {
+        _subsidyRate = 10.0;
+      }
+    }
+
+    // Load completed journeys for the cutoff period
+    final rawJourneys = await _apiService.getJourneys();
+    _pastJourneys.clear();
+    for (var j in rawJourneys) {
+      final status = j['status'] ?? '';
+      if (status == 'completed' || status == 'validated' || status == 'finished') {
+        final double gpsKm = (j['gps_dist_km'] as num?)?.toDouble() ?? (j['declared_dist_km'] as num?)?.toDouble() ?? 0.0;
+        final double subTotal = gpsKm * _subsidyRate;
+        _pastJourneys.add({
+          'id': 'REC-${j['id']}',
+          'fecha': j['start_time'] != null && j['start_time'].toString().length >= 10
+              ? j['start_time'].toString().substring(0, 10)
+              : '2026-07-10',
+          'origen': j['start_address'] ?? 'Managua',
+          'destino': j['destination'] ?? j['end_address'] ?? 'Destino',
+          'km_gps': gpsKm,
+          'subsidio': subTotal,
+        });
+      }
     }
 
     if (mounted) {

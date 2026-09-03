@@ -26,6 +26,7 @@ class Vehicle {
   final String plateNumber;
   final String brand;
   final String model;
+  final String vehicleType;
   final double currentKm;
   final String status;
 
@@ -34,6 +35,7 @@ class Vehicle {
     required this.plateNumber,
     required this.brand,
     required this.model,
+    this.vehicleType = 'auto',
     required this.currentKm,
     required this.status,
   });
@@ -44,6 +46,7 @@ class Vehicle {
       plateNumber: json['plate_number'] ?? '',
       brand: json['brand'] ?? '',
       model: json['model'] ?? '',
+      vehicleType: json['vehicle_type'] ?? 'auto',
       currentKm: (json['current_km'] ?? 0.0).toDouble(),
       status: json['status'] ?? 'active',
     );

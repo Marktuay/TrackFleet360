@@ -214,4 +214,17 @@ class ApiService {
       };
     }
   }
+
+  Future<List<dynamic>> getJourneys() async {
+    final token = await getToken();
+    try {
+      final response = await _dio.get('/journeys', options: _getAuthOptions(token ?? ''));
+      if (response.data is List) {
+        return response.data;
+      }
+    } catch (e) {
+      // API fallback
+    }
+    return [];
+  }
 }
