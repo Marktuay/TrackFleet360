@@ -186,7 +186,32 @@ func (m *MemoryStore) seedData() {
 		UpdatedAt:    time.Now(),
 	}
 	m.users[6] = jorgeUser
-	m.nextUserID = 8
+
+	testUser := &models.User{
+		ID:           9,
+		Email:        "test@newcenturyni.com",
+		PasswordHash: hashPassword("test123"),
+		FullName:     "Usuario Test Admin",
+		Role:         models.RoleAdmin,
+		Active:       true,
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
+	}
+	m.users[9] = testUser
+
+	testDriverUser := &models.User{
+		ID:           10,
+		Email:        "test.driver@newcenturyni.com",
+		PasswordHash: hashPassword("test123"),
+		FullName:     "Conductor Test Operativo",
+		Role:         models.RoleDriver,
+		Active:       true,
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
+	}
+	m.users[10] = testDriverUser
+
+	m.nextUserID = 11
 
 	driver1 := &models.Driver{
 		ID:             1,
@@ -259,7 +284,25 @@ func (m *MemoryStore) seedData() {
 		UpdatedAt:      time.Now(),
 	}
 	m.drivers[4] = driver4
-	m.nextDriverID = 5
+
+	driverTest := &models.Driver{
+		ID:             5,
+		UserID:         10,
+		User:           testDriverUser,
+		LicenseNumber:  "LIC-TEST-2026",
+		Phone:          "+505 8888-0000",
+		Company:        "Newcentury NI Test",
+		Position:       "Conductor Test",
+		VehicleType:    "auto",
+		VehicleSubtype: "Toyota Hilux 4x4 Test",
+		FuelType:       "diesel",
+		PlateNumber:    "M-289-401",
+		Status:         "active",
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
+	m.drivers[5] = driverTest
+	m.nextDriverID = 6
 
 	v1 := &models.Vehicle{
 		ID:          1,
