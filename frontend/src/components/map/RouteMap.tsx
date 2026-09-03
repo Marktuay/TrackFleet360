@@ -56,11 +56,10 @@ export default function RouteMap({
       });
       leafletInstance.current = map;
 
-      // Dark Matter CartoDB tiles for high-end aesthetic
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://carto.com/">CARTO</a> & OpenStreetMap Nicaragua',
-        maxZoom: 19,
-        subdomains: 'abcd',
+      // Esri World Dark Gray Canvas tiles (100% free, no API key required, dark theme)
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '&copy; <a href="https://www.esri.com/">Esri</a> & OpenStreetMap Nicaragua',
+        maxZoom: 16,
       }).addTo(map);
 
       const bounds: [number, number][] = [];
