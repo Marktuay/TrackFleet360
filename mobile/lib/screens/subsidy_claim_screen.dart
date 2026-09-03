@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -156,18 +158,34 @@ class _SubsidyClaimScreenState extends State<SubsidyClaimScreen> {
       );
 
       final bytes = await pdf.save();
+      final filename = 'Solicitud_Pago_Subsidio_${_driverName.replaceAll(' ', '_')}.pdf';
+      String savedPath = '';
+
+      try {
+        final dir = await getApplicationDocumentsDirectory();
+        final file = File('${dir.path}/$filename');
+        await file.writeAsBytes(bytes, flush: true);
+        savedPath = file.path;
+        debugPrint('PDF guardado localmente en el teléfono: $savedPath');
+      } catch (err) {
+        debugPrint('Aviso: No se pudo escribir en almacenamiento interno: $err');
+      }
 
       await Printing.sharePdf(
         bytes: bytes,
-        filename: 'Solicitud_Pago_Subsidio_${_driverName.replaceAll(' ', '_')}.pdf',
+        filename: filename,
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('✓ Solicitud de Pago PDF generada para $_driverName.'),
+            content: Text(
+              savedPath.isNotEmpty
+                  ? '✓ Solicitud de Pago PDF guardada en el teléfono ($filename)'
+                  : '✓ Solicitud de Pago PDF generada para $_driverName.',
+            ),
             backgroundColor: const Color(0xFF10B981),
-            duration: const Duration(seconds: 3),
+            duration: const Duration(seconds: 4),
           ),
         );
       }
