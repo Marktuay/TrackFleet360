@@ -25,15 +25,17 @@ export default function RouteMap({
   height = '360px',
 }: RouteMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const leafletInstance = useRef<any>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const layerGroupRef = useRef<any>(null);
 
+  // 1. Initialize Leaflet Map ONCE on mount
   useEffect(() => {
     if (typeof window === 'undefined' || !mapRef.current) return;
     const container = mapRef.current;
+    let isMounted = true;
 
-    // Load Leaflet dynamically
     import('leaflet').then((L) => {
-      if (!container) return;
+      if (!isMounted || !container) return;
 
       // Fix default marker icon paths in webpack/next
       delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -43,25 +45,49 @@ export default function RouteMap({
         shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
       });
 
-      if (leafletInstance.current) {
-        leafletInstance.current.remove();
+      if (!mapInstanceRef.current) {
+        const defaultCenter: [number, number] = [startLat || 12.1364, startLng || -86.2514];
+        const map = L.map(container, {
+          center: defaultCenter,
+          zoom: 12,
+          zoomControl: true,
+          fadeAnimation: false,
+        });
+
+        // OpenStreetMap standard tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 19,
+          subdomains: ['a', 'b', 'c'],
+        }).addTo(map);
+
+        const layerGroup = L.layerGroup().addTo(map);
+        layerGroupRef.current = layerGroup;
+        mapInstanceRef.current = map;
       }
+    });
 
-      // Default center: Managua, Nicaragua (12.1364, -86.2514)
-      const defaultCenter: [number, number] = [startLat || 12.1364, startLng || -86.2514];
-      const map = L.map(container, {
-        center: defaultCenter,
-        zoom: 12,
-        zoomControl: true,
-      });
-      leafletInstance.current = map;
+    return () => {
+      isMounted = false;
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+        layerGroupRef.current = null;
+      }
+    };
+  }, []); // Run once on mount
 
-      // OpenStreetMap standard tiles (100% free, no API key required, maxZoom 19)
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19,
-      }).addTo(map);
+  // 2. Update Layers (Markers, Polyline, Bounds) smoothly without destroying map
+  useEffect(() => {
+    if (!mapInstanceRef.current || !layerGroupRef.current) return;
 
+    import('leaflet').then((L) => {
+      const map = mapInstanceRef.current;
+      const layerGroup = layerGroupRef.current;
+
+      if (!map || !layerGroup) return;
+
+      layerGroup.clearLayers();
       const bounds: [number, number][] = [];
 
       // 1. Add Start Marker (Green Pin)
@@ -74,7 +100,7 @@ export default function RouteMap({
           iconAnchor: [9, 9],
         });
         L.marker([startLat, startLng], { icon: startIcon })
-          .addTo(map)
+          .addTo(layerGroup)
           .bindPopup(`<strong style="color: #10b981;">🟢 ORIGEN (Nicaragua):</strong><br/>${startAddress}`);
       }
 
@@ -88,7 +114,7 @@ export default function RouteMap({
           iconAnchor: [9, 9],
         });
         L.marker([endLat, endLng], { icon: endIcon })
-          .addTo(map)
+          .addTo(layerGroup)
           .bindPopup(`<strong style="color: #ef4444;">🔴 DESTINO (Nicaragua):</strong><br/>${endAddress}`);
       }
 
@@ -100,48 +126,30 @@ export default function RouteMap({
           bounds.push([pt.latitude, pt.longitude]);
         });
       } else if (startLat && startLng && endLat && endLng) {
-        // Fallback straight line if points empty
         polylineCoords.push([startLat, startLng], [endLat, endLng]);
       }
 
       if (polylineCoords.length > 1) {
         L.polyline(polylineCoords, {
-          color: '#0284c7', // Sky Blue
+          color: '#0284c7',
           weight: 5,
           opacity: 0.9,
           dashArray: '8, 8',
-        }).addTo(map);
+        }).addTo(layerGroup);
       }
 
-      // Fit map view bounds
       if (bounds.length > 0) {
         map.fitBounds(bounds, { padding: [40, 40] });
       }
 
-      // Invalidate size to ensure Leaflet expands to 100% of container dimensions
       setTimeout(() => {
-        map.invalidateSize();
-      }, 150);
-
-      setTimeout(() => {
-        map.invalidateSize();
-      }, 500);
+        if (map) map.invalidateSize();
+      }, 100);
     });
-
-    return () => {
-      if (leafletInstance.current) {
-        leafletInstance.current.remove();
-        leafletInstance.current = null;
-      }
-    };
   }, [points, startLat, startLng, endLat, endLng, startAddress, endAddress]);
 
   return (
     <div className="relative w-full rounded-xl overflow-hidden border border-slate-800 shadow-xl">
-      <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      />
       <div ref={mapRef} style={{ height }} className="w-full bg-slate-900 z-10" />
       <div className="absolute top-3 right-3 bg-slate-950/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 z-20 text-[11px] text-slate-300 font-semibold flex items-center gap-3 shadow-md">
         <span className="flex items-center gap-1.5 text-emerald-400">
