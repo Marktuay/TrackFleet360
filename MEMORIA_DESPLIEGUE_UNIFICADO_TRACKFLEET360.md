@@ -54,3 +54,29 @@ Se configuró el inicio de sesión para que sea **insensible a mayúsculas/minú
 ```bash
 cd ~/TrackFleet360 && git reset --hard origin/main && git pull origin main && sudo bash frontend/deploy/harden_security.sh && chmod +x frontend/deploy/deploy_unified_vm.sh && ./frontend/deploy/deploy_unified_vm.sh
 ```
+
+---
+
+## 🔑 5. Cuentas de Prueba Dedicadas (Test Accounts)
+
+* **Test Administrador (Web)**: `test@newcenturyni.com` | Contraseña: `test123` | Rol: `admin`
+* **Test Conductor (Móvil)**: `test.driver@newcenturyni.com` | Contraseña: `test123` | Rol: `driver` | Vehículo: Toyota Hilux 4x4 (`M-289-401`)
+
+---
+
+## 🗺️ 6. Optimización de Mapas Leaflet (Web Frontend)
+
+* **Servidor de Capas**: OpenStreetMap Standard (`https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`, maxZoom 19, libre y sin API key).
+* **Renderizado Antiparpadeo**: Instancia persistente `L.Map` con capa `L.layerGroup` para actualizar marcadores y trazado GPS sin destruir el mapa ni recargar imágenes de teselas.
+* **Auto-Ajuste de Dimensiones**: Llamadas automáticas a `map.invalidateSize()` tras renderizar en contenedores dinámicos.
+
+---
+
+## 📱 7. Aplicación Móvil (Flutter / Dart)
+
+* **Tarifas Dinámicas de Subsidio**:
+  - **Autos / Camionetas (Hilux 4x4, D-Max, SUVs, Sedanes)**: **`C$ 10.0 / KM`**
+  - **Motocicletas**: **`C$ 6.0 / KM`**
+* **Guardado de PDF en Almacenamiento Local**:
+  - Uso de `path_provider` para escribir directamente las Solicitudes de Pago en la memoria interna del teléfono (`getApplicationDocumentsDirectory()`) antes de abrir el diálogo nativo de compartir/imprimir.
+
