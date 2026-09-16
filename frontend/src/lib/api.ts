@@ -1,6 +1,6 @@
 export const API_URL = typeof window !== 'undefined'
   ? (process.env.NEXT_PUBLIC_API_URL || '/api/v1')
-  : (process.env.NEXT_PUBLIC_API_URL || 'https://trackfleet360.newcenturyni.com/api/v1');
+  : (process.env.NEXT_PUBLIC_API_URL || 'https://app.newcenturyni.com/api/v1');
 export const API_BASE_URL = API_URL;
 
 export interface User {
