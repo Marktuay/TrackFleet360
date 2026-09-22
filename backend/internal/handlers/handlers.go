@@ -601,3 +601,105 @@ func (h *Handler) GetReportSummary(c *gin.Context) {
 
 	c.JSON(http.StatusOK, summary)
 }
+
+// Traccar Feature: Hardware GPS Telemetry Ingest API
+func (h *Handler) IngestTelemetry(c *gin.Context) {
+	var req models.TelemetryIngestRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if req.Latitude == 0 && req.Longitude == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Coordenadas GPS requeridas"})
+		return
+	}
+
+	point := models.GPSPoint{
+		JourneyID:  1,
+		Latitude:   req.Latitude,
+		Longitude:  req.Longitude,
+		Speed:      req.Speed,
+		RecordedAt: time.Now(),
+	}
+
+	if req.RecordedAt.IsZero() {
+		point.RecordedAt = time.Now()
+	} else {
+		point.RecordedAt = req.RecordedAt
+	}
+
+	if err := h.repo.AddGPSPoints(c.Request.Context(), []models.GPSPoint{point}); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Telemetría Traccar recibida exitosamente",
+		"status":  "success",
+		"point":   point,
+	})
+}
+
+// Geofence Handlers
+func (h *Handler) ListGeofences(c *gin.Context) {
+	list, err := h.repo.ListGeofences(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, list)
+}
+
+func (h *Handler) CreateGeofence(c *gin.Context) {
+	var g models.Geofence
+	if err := c.ShouldBindJSON(&g); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if strings.TrimSpace(g.Name) == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "El nombre de la geocerca es requerido"})
+		return
+	}
+
+	if err := h.repo.CreateGeofence(c.Request.Context(), &g); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, g)
+}
+
+// Report CSV Export Handler
+func (h *Handler) ExportReportCSV(c *gin.Context) {
+	cutoffID, _ := strconv.Atoi(c.Query("cutoff_id"))
+	journeys, err := h.repo.ListJourneys(c.Request.Context(), 0, 0, "", cutoffID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.Header("Content-Type", "text/csv; charset=utf-8")
+	c.Header("Content-Disposition", "attachment; filename=\"Reporte_Liquidacion_Subsidio_TrackFleet360.csv\"")
+
+	var b strings.Builder
+	b.WriteString("ID Recorrido,Conductor,Placa,Origen,Destino,Distancia Decl (KM),Distancia GPS (KM),Tarifa (C$/KM),Subsidio Total (C$),Estado,Notas\n")
+
+	for _, j := range journeys {
+		driverName := "Conductor Registrado"
+		if j.Driver != nil && j.Driver.User != nil {
+			driverName = j.Driver.User.FullName
+		}
+		plate := "PLACA-PENDIENTE"
+		if j.Vehicle != nil {
+			plate = j.Vehicle.PlateNumber
+		}
+
+		line := fmt.Sprintf("%d,\"%s\",\"%s\",\"%s\",\"%s\",%.2f,%.2f,%.2f,%.2f,%s,\"%s\"\n",
+			j.ID, driverName, plate, j.StartAddress, j.Destination, j.DeclaredDistKM, j.GPSDistKM, j.SubsidyRate, j.SubsidyAmount, j.Status, j.SupervisorNotes)
+		b.WriteString(line)
+	}
+
+	c.String(http.StatusOK, b.String())
+}

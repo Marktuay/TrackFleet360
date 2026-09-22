@@ -49,8 +49,9 @@ func main() {
 
 	v1 := r.Group("/api/v1")
 	{
-		// Public Auth
+		// Public Auth & Hardware Telemetry Ingest
 		v1.POST("/auth/login", h.Login)
+		v1.POST("/gps/ingest", h.IngestTelemetry)
 
 		// Protected Routes
 		protected := v1.Group("")
@@ -58,10 +59,11 @@ func main() {
 		{
 			protected.GET("/auth/me", h.GetMe)
 
-			// Catalog Read & Cutoff Calendar
+			// Catalog Read, Cutoff Calendar & Geofences
 			protected.GET("/vehicles", h.ListVehicles)
 			protected.GET("/drivers", h.ListDrivers)
 			protected.GET("/cutoffs", h.ListCutoffPeriods)
+			protected.GET("/geofences", h.ListGeofences)
 
 			// Journeys (Driver & Supervisor)
 			protected.POST("/journeys/start", h.StartJourney)
@@ -82,8 +84,10 @@ func main() {
 				supervisor.DELETE("/users/:id", h.DeleteUser)
 				supervisor.PATCH("/users/:id/status", h.ToggleUserStatus)
 				supervisor.POST("/vehicles", h.CreateVehicle)
+				supervisor.POST("/geofences", h.CreateGeofence)
 				supervisor.POST("/journeys/:id/validate", h.ValidateJourney)
 				supervisor.GET("/reports/summary", h.GetReportSummary)
+				supervisor.GET("/reports/export", h.ExportReportCSV)
 			}
 		}
 	}

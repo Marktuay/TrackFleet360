@@ -156,6 +156,25 @@ type AuditLog struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type Geofence struct {
+	ID           int       `json:"id"`
+	Name         string    `json:"name"`
+	Type         string    `json:"type"` // authorized, restricted
+	Latitude     float64   `json:"latitude"`
+	Longitude    float64   `json:"longitude"`
+	RadiusMeters float64   `json:"radius_meters"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
+type TelemetryIngestRequest struct {
+	DeviceID    string    `json:"device_id"`
+	PlateNumber string    `json:"plate_number"`
+	Latitude    float64   `json:"latitude"`
+	Longitude   float64   `json:"longitude"`
+	Speed       float64   `json:"speed"`
+	RecordedAt  time.Time `json:"recorded_at"`
+}
+
 // Request / Response DTOs
 type LoginRequest struct {
 	Email    string `json:"email" binding:"required"`

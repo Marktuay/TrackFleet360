@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
 	"strings"
 	"sync"
 	"time"
@@ -51,34 +52,42 @@ type Repository interface {
 	// Reports & Cutoffs
 	GetReportSummary(ctx context.Context, cutoffID int) (*models.ReportSummary, error)
 	ListCutoffPeriods(ctx context.Context) ([]models.CutoffPeriod, error)
+
+	// Geofences
+	ListGeofences(ctx context.Context) ([]models.Geofence, error)
+	CreateGeofence(ctx context.Context, g *models.Geofence) error
 }
 
 type MemoryStore struct {
-	mu           sync.RWMutex
-	users        map[int]*models.User
-	vehicles     map[int]*models.Vehicle
-	drivers      map[int]*models.Driver
-	journeys     map[int]*models.Journey
-	gpsPoints    map[int][]models.GPSPoint
-	photos       map[int][]models.Photo
-	nextUserID   int
-	nextVehID    int
-	nextDriverID int
-	nextJournID  int
+	mu             sync.RWMutex
+	users          map[int]*models.User
+	vehicles       map[int]*models.Vehicle
+	drivers        map[int]*models.Driver
+	journeys       map[int]*models.Journey
+	gpsPoints      map[int][]models.GPSPoint
+	photos         map[int][]models.Photo
+	geofences      map[int]*models.Geofence
+	nextUserID     int
+	nextVehID      int
+	nextDriverID   int
+	nextJournID    int
+	nextGeofenceID int
 }
 
 func NewMemoryStore() *MemoryStore {
 	store := &MemoryStore{
-		users:        make(map[int]*models.User),
-		vehicles:     make(map[int]*models.Vehicle),
-		drivers:      make(map[int]*models.Driver),
-		journeys:     make(map[int]*models.Journey),
-		gpsPoints:    make(map[int][]models.GPSPoint),
-		photos:       make(map[int][]models.Photo),
-		nextUserID:   1,
-		nextVehID:    1,
-		nextDriverID: 1,
-		nextJournID:  1,
+		users:          make(map[int]*models.User),
+		vehicles:       make(map[int]*models.Vehicle),
+		drivers:        make(map[int]*models.Driver),
+		journeys:       make(map[int]*models.Journey),
+		gpsPoints:      make(map[int][]models.GPSPoint),
+		photos:         make(map[int][]models.Photo),
+		geofences:      make(map[int]*models.Geofence),
+		nextUserID:     1,
+		nextVehID:      1,
+		nextDriverID:   1,
+		nextJournID:    1,
+		nextGeofenceID: 1,
 	}
 
 	store.seedData()
@@ -352,6 +361,30 @@ func (m *MemoryStore) seedData() {
 	}
 	m.vehicles[3] = v3
 	m.nextVehID = 4
+
+	// Seed Geofences in Nicaragua
+	g1 := &models.Geofence{
+		ID:           1,
+		Name:         "Zona Franca Las Mercedes (Managua)",
+		Type:         "authorized",
+		Latitude:     12.1465,
+		Longitude:    -86.1754,
+		RadiusMeters: 1500,
+		CreatedAt:    time.Now(),
+	}
+	m.geofences[1] = g1
+
+	g2 := &models.Geofence{
+		ID:           2,
+		Name:         "Zona Restringida Almacén Central",
+		Type:         "restricted",
+		Latitude:     12.1200,
+		Longitude:    -86.2300,
+		RadiusMeters: 500,
+		CreatedAt:    time.Now(),
+	}
+	m.geofences[2] = g2
+	m.nextGeofenceID = 3
 
 	now := time.Now()
 	startTime := now.Add(-3 * time.Hour)
@@ -825,12 +858,67 @@ func (m *MemoryStore) ListJourneys(ctx context.Context, driverID int, vehicleID 
 	return list, nil
 }
 
+func calculateHaversineMeters(lat1, lon1, lat2, lon2 float64) float64 {
+	const R = 6371000.0 // Earth radius in meters
+	dLat := (lat2 - lat1) * math.Pi / 180.0
+	dLon := (lon2 - lon1) * math.Pi / 180.0
+	a := math.Sin(dLat/2)*math.Sin(dLat/2) +
+		math.Cos(lat1*math.Pi/180.0)*math.Cos(lat2*math.Pi/180.0)*
+			math.Sin(dLon/2)*math.Sin(dLon/2)
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+	return R * c
+}
+
+func (m *MemoryStore) ListGeofences(ctx context.Context) ([]models.Geofence, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	list := make([]models.Geofence, 0, len(m.geofences))
+	for _, g := range m.geofences {
+		list = append(list, *g)
+	}
+	return list, nil
+}
+
+func (m *MemoryStore) CreateGeofence(ctx context.Context, g *models.Geofence) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	g.ID = m.nextGeofenceID
+	m.nextGeofenceID++
+	g.CreatedAt = time.Now()
+
+	m.geofences[g.ID] = g
+	return nil
+}
+
 func (m *MemoryStore) AddGPSPoints(ctx context.Context, points []models.GPSPoint) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	for _, p := range points {
 		m.gpsPoints[p.JourneyID] = append(m.gpsPoints[p.JourneyID], p)
+
+		// 1. Speeding Event Detection (> 90.0 km/h)
+		if p.Speed > 90.0 {
+			if j, ok := m.journeys[p.JourneyID]; ok {
+				j.Status = models.StatusFlagged
+				if j.SupervisorNotes == "" {
+					j.SupervisorNotes = fmt.Sprintf("⚠️ Alerta Traccar: Exceso de velocidad (%.1f km/h)", p.Speed)
+				}
+			}
+		}
+
+		// 2. Geofence Breach Event Detection
+		for _, g := range m.geofences {
+			distM := calculateHaversineMeters(p.Latitude, p.Longitude, g.Latitude, g.Longitude)
+			if g.Type == "restricted" && distM <= g.RadiusMeters {
+				if j, ok := m.journeys[p.JourneyID]; ok {
+					j.Status = models.StatusFlagged
+					j.SupervisorNotes = fmt.Sprintf("⛔ Alerta Traccar: Ingreso a Zona Restringida (%s)", g.Name)
+				}
+			}
+		}
 	}
 	return nil
 }

@@ -28,7 +28,7 @@ export default function RouteMap({
   const mapInstanceRef = useRef<any>(null);
   const layerGroupRef = useRef<any>(null);
 
-  // 1. Initialize Leaflet Map ONCE on mount
+  // 1. Initialize Leaflet Map ONCE on mount with Multi-Layer Tile Switcher
   useEffect(() => {
     if (typeof window === 'undefined' || !mapRef.current) return;
     const container = mapRef.current;
@@ -54,12 +54,33 @@ export default function RouteMap({
           fadeAnimation: false,
         });
 
-        // OpenStreetMap standard tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        // 1. OpenStreetMap Standard Layer
+        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors',
           maxZoom: 19,
-          subdomains: ['a', 'b', 'c'],
-        }).addTo(map);
+        });
+
+        // 2. Esri World Imagery (High-Res Satellite) Layer
+        const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          attribution: '&copy; Esri World Imagery',
+          maxZoom: 18,
+        });
+
+        // 3. CartoDB Dark Matter Layer
+        const dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; CartoDB Dark Matter',
+          maxZoom: 19,
+        });
+
+        osm.addTo(map);
+
+        const baseMaps = {
+          "🗺️ Calles (OpenStreetMap)": osm,
+          "🛰️ Satelital (Esri HD)": satellite,
+          "🌙 Modo Oscuro (Carto)": dark,
+        };
+
+        L.control.layers(baseMaps, undefined, { position: 'bottomleft' }).addTo(map);
 
         const layerGroup = L.layerGroup().addTo(map);
         layerGroupRef.current = layerGroup;

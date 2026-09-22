@@ -195,3 +195,29 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
 
   return response.json();
 }
+
+export interface Geofence {
+  id: number;
+  name: string;
+  type: 'authorized' | 'restricted';
+  latitude: number;
+  longitude: number;
+  radius_meters: number;
+  created_at?: string;
+}
+
+export async function getGeofences(): Promise<Geofence[]> {
+  return apiFetch('/geofences');
+}
+
+export async function createGeofence(data: Partial<Geofence>): Promise<Geofence> {
+  return apiFetch('/geofences', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export function getExportReportCSVUrl(cutoffId?: number): string {
+  const param = cutoffId ? `?cutoff_id=${cutoffId}` : '';
+  return `${API_URL}/reports/export${param}`;
+}
