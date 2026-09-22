@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import { 
@@ -18,6 +19,15 @@ import {
 } from 'lucide-react';
 import { apiFetch, ReportSummary, Journey } from '@/lib/api';
 import AuthGuard from '@/components/auth/AuthGuard';
+
+const RouteMap = dynamic(() => import('@/components/map/RouteMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[360px] bg-slate-900 animate-pulse rounded-xl flex items-center justify-center text-slate-500 text-xs font-semibold">
+      Cargando Trazado de Carretera GPS (Nicaragua)...
+    </div>
+  ),
+});
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
@@ -179,6 +189,45 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Monitoreo en Vivo & Selector de Capas Map Widget */}
+          <div className="glass-panel p-5 space-y-3 border border-slate-800 rounded-2xl bg-slate-900/60">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-sky-400" /> Monitoreo de Rutas & Selector Multicapa Traccar
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Usa el selector de capas (esquina inferior izquierda del mapa) para alternar entre <b>Calles (OSM)</b>, <b>Satelital HD (Esri)</b> y <b>Modo Oscuro (CartoDB)</b>.
+                </p>
+              </div>
+              <span className="self-start sm:self-auto text-xs font-semibold px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full flex items-center gap-1.5 shrink-0">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Mapa Activo
+              </span>
+            </div>
+            <div className="rounded-xl overflow-hidden border border-slate-800">
+              <RouteMap 
+                startLat={12.1430} 
+                startLng={-86.2080} 
+                endLat={12.1978} 
+                endLng={-86.0967} 
+                startAddress="Managua (Carretera Norte)"
+                endAddress="Tipitapa (Zona Industrial)"
+                height="380px"
+                points={[
+                  { id: 1, journey_id: 1, latitude: 12.1430, longitude: -86.2080, speed: 0, recorded_at: new Date().toISOString() },
+                  { id: 2, journey_id: 1, latitude: 12.1445, longitude: -86.2000, speed: 45, recorded_at: new Date().toISOString() },
+                  { id: 3, journey_id: 1, latitude: 12.1470, longitude: -86.1800, speed: 55, recorded_at: new Date().toISOString() },
+                  { id: 4, journey_id: 1, latitude: 12.1485, longitude: -86.1680, speed: 60, recorded_at: new Date().toISOString() },
+                  { id: 5, journey_id: 1, latitude: 12.1550, longitude: -86.1500, speed: 62, recorded_at: new Date().toISOString() },
+                  { id: 6, journey_id: 1, latitude: 12.1650, longitude: -86.1300, speed: 58, recorded_at: new Date().toISOString() },
+                  { id: 7, journey_id: 1, latitude: 12.1800, longitude: -86.1150, speed: 50, recorded_at: new Date().toISOString() },
+                  { id: 8, journey_id: 1, latitude: 12.1930, longitude: -86.1000, speed: 40, recorded_at: new Date().toISOString() },
+                  { id: 9, journey_id: 1, latitude: 12.1978, longitude: -86.0967, speed: 0, recorded_at: new Date().toISOString() },
+                ]}
+              />
             </div>
           </div>
 
