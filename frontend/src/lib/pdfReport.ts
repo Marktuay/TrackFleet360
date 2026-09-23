@@ -155,8 +155,36 @@ export function generateCutoffPDFReport({
           font-size: 11px;
           border: none;
         }
+        .signatures-container {
+          margin-top: 45px;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          page-break-inside: avoid;
+        }
+        .signature-box {
+          width: 30%;
+          text-align: center;
+        }
+        .signature-line {
+          border-bottom: 1.5px solid #0f172a;
+          margin-bottom: 8px;
+          height: 35px;
+        }
+        .signature-title {
+          font-size: 10px;
+          font-weight: bold;
+          color: #0f172a;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+        }
+        .signature-subtitle {
+          font-size: 9px;
+          color: #64748b;
+          margin-top: 3px;
+        }
         .footer-note {
-          margin-top: 20px;
+          margin-top: 25px;
           font-size: 9px;
           color: #94a3b8;
           text-align: center;
@@ -213,6 +241,27 @@ export function generateCutoffPDFReport({
           </tr>
         </tfoot>
       </table>
+
+      <!-- Bloques Oficiales de Firma e Institucionalización -->
+      <div class="signatures-container">
+        <div class="signature-box">
+          <div class="signature-line"></div>
+          <div class="signature-title">ELABORADO POR (COLABORADOR)</div>
+          <div class="signature-subtitle">Firma del Conductor / Solicitante</div>
+        </div>
+
+        <div class="signature-box">
+          <div class="signature-line"></div>
+          <div class="signature-title">REVISADO Y AUDITADO POR</div>
+          <div class="signature-subtitle">Firma del Auditor / Responsable</div>
+        </div>
+
+        <div class="signature-box">
+          <div class="signature-line"></div>
+          <div class="signature-title">AUTORIZADO PARA PAGO</div>
+          <div class="signature-subtitle">Gerencia / Administración</div>
+        </div>
+      </div>
 
       <div class="footer-note">
         TrackFleet 360 © 2026 | Documento no manipulable generado automáticamente por el sistema de auditoría | Guardar como PDF
