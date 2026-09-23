@@ -92,6 +92,22 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> activateDevice(String code) async {
+    try {
+      final response = await _dio.post('/auth/activate-device', data: {
+        'code': code.trim(),
+      });
+      final token = response.data['token'];
+      await saveToken(token);
+      if (response.data['user'] != null) {
+        await saveUserData(response.data['user']);
+      }
+      return response.data;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<List<Vehicle>> getVehicles() async {
     final token = await getToken();
     try {

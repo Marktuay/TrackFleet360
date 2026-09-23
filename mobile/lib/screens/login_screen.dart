@@ -88,6 +88,82 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _showActivationCodeDialog() {
+    final codeController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        title: const Text(
+          'Enrolamiento con Código de 6 Dígitos',
+          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Ingrese el código de 6 dígitos generado en el panel web por el Auditor / Administración:',
+              style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: codeController,
+              keyboardType: TextInputType.number,
+              maxLength: 6,
+              style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: 6),
+              textAlign: TextAlign.center,
+              decoration: InputDecoration(
+                hintText: '123456',
+                hintStyle: TextStyle(color: Colors.grey.shade600, letterSpacing: 6),
+                filled: true,
+                fillColor: const Color(0xFF0F172A),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancelar', style: TextStyle(color: Color(0xFF94A3B8))),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final code = codeController.text.trim();
+              if (code.length != 6) return;
+              Navigator.of(ctx).pop();
+              setState(() {
+                _isLoading = true;
+                _errorMessage = null;
+              });
+              try {
+                await _apiService.activateDevice(code);
+                if (mounted) {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (_) => const VehicleSelectScreen()),
+                  );
+                }
+              } catch (e) {
+                setState(() {
+                  _errorMessage = 'Código de activación inválido o expirado.';
+                });
+              } finally {
+                if (mounted) {
+                  setState(() {
+                    _isLoading = false;
+                  });
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF8B5CF6)),
+            child: const Text('Activar Celular', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -221,6 +297,21 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       backgroundColor: const Color(0xFF0284C7).withOpacity(0.08),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                
+                // 6-Digit Enrolment Activation Option
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: TextButton.icon(
+                    onPressed: _isLoading ? null : _showActivationCodeDialog,
+                    icon: const Icon(Icons.key_rounded, color: Color(0xFFA78BFA), size: 18),
+                    label: const Text(
+                      'Activar Celular con Código de 6 Dígitos',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFFA78BFA)),
                     ),
                   ),
                 ),
