@@ -493,78 +493,8 @@ func (m *MemoryStore) seedData() {
 	m.geofences[2] = g2
 	m.nextGeofenceID = 3
 
-	now := time.Now()
-	startTime := now.Add(-3 * time.Hour)
-	endTime := now.Add(-1 * time.Hour)
-
-	cutoff14 := 14 // Julio 2do corte (8-22 Julio 2026)
-
-	j1 := &models.Journey{
-		ID:             1,
-		DriverID:       1,
-		Driver:         driver1,
-		VehicleID:      1,
-		Vehicle:        v1,
-		CutoffID:       &cutoff14,
-		StartTime:      startTime,
-		EndTime:        &endTime,
-		StartLat:       9.9333,
-		StartLng:       -84.0833,
-		StartAddress:   "San José Centro, Bodega Principal",
-		EndLat:         10.0167,
-		EndLng:         -84.2167,
-		EndAddress:     "Alajuela Centro, Sucursal Norte",
-		StartKM:        18400.0,
-		EndKM:          18450.0,
-		DeclaredDistKM: 50.0,
-		GPSDistKM:      22.5,
-		DiffKM:         27.5,
-		SubsidyRate:    10.0,  // 10 C$/km for Auto
-		SubsidyAmount:  500.0, // 50 KM * 10 C$ = 500 C$
-		Status:         models.StatusFlagged,
-		CreatedAt:      startTime,
-		UpdatedAt:      endTime,
-	}
-	m.journeys[1] = j1
-
-	startTime2 := now.Add(-6 * time.Hour)
-	endTime2 := now.Add(-4 * time.Hour)
-	j2 := &models.Journey{
-		ID:             2,
-		DriverID:       2,
-		Driver:         driver2,
-		VehicleID:      2,
-		Vehicle:        v2,
-		CutoffID:       &cutoff14,
-		StartTime:      startTime2,
-		EndTime:        &endTime2,
-		StartLat:       9.9300,
-		StartLng:       -84.0800,
-		StartAddress:   "Managua Centro",
-		EndLat:         10.0000,
-		EndLng:         -84.2000,
-		EndAddress:     "Tipitapa Zona Industrial",
-		StartKM:        8460.0,
-		EndKM:          8500.0,
-		DeclaredDistKM: 40.0,
-		GPSDistKM:      39.2,
-		DiffKM:         0.8,
-		SubsidyRate:    6.0,   // 6 C$/km for Moto
-		SubsidyAmount:  240.0, // 40 KM * 6 C$ = 240 C$
-		Status:         models.StatusApproved,
-		CreatedAt:      startTime2,
-		UpdatedAt:      endTime2,
-	}
-	m.journeys[2] = j2
-	m.nextJournID = 3
-
-	pts := []models.GPSPoint{
-		{ID: 1, JourneyID: 1, Latitude: 9.9333, Longitude: -84.0833, Speed: 0, RecordedAt: startTime},
-		{ID: 2, JourneyID: 1, Latitude: 9.9500, Longitude: -84.1100, Speed: 45, RecordedAt: startTime.Add(15 * time.Minute)},
-		{ID: 3, JourneyID: 1, Latitude: 9.9800, Longitude: -84.1600, Speed: 65, RecordedAt: startTime.Add(35 * time.Minute)},
-		{ID: 4, JourneyID: 1, Latitude: 10.0167, Longitude: -84.2167, Speed: 0, RecordedAt: endTime},
-	}
-	m.gpsPoints[1] = pts
+	// Journeys start clean (0 initial sample journeys for live testing)
+	m.nextJournID = 1
 }
 
 func (m *MemoryStore) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
