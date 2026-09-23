@@ -3,10 +3,12 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"math"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -74,6 +76,105 @@ type MemoryStore struct {
 	nextGeofenceID int
 }
 
+type StoreState struct {
+	Users          map[int]*models.User      `json:"users"`
+	Vehicles       map[int]*models.Vehicle   `json:"vehicles"`
+	Drivers        map[int]*models.Driver    `json:"drivers"`
+	Journeys       map[int]*models.Journey   `json:"journeys"`
+	GPSPoints      map[int][]models.GPSPoint `json:"gps_points"`
+	Photos         map[int][]models.Photo    `json:"photos"`
+	Geofences      map[int]*models.Geofence  `json:"geofences"`
+	NextUserID     int                       `json:"next_user_id"`
+	NextVehID      int                       `json:"next_veh_id"`
+	NextDriverID   int                       `json:"next_driver_id"`
+	NextJournID    int                       `json:"next_journ_id"`
+	NextGeofenceID int                       `json:"next_geofence_id"`
+}
+
+func (m *MemoryStore) saveToFileLocked() {
+	state := StoreState{
+		Users:          m.users,
+		Vehicles:       m.vehicles,
+		Drivers:        m.drivers,
+		Journeys:       m.journeys,
+		GPSPoints:      m.gpsPoints,
+		Photos:         m.photos,
+		Geofences:      m.geofences,
+		NextUserID:     m.nextUserID,
+		NextVehID:      m.nextVehID,
+		NextDriverID:   m.nextDriverID,
+		NextJournID:    m.nextJournID,
+		NextGeofenceID: m.nextGeofenceID,
+	}
+
+	_ = os.MkdirAll("data", 0755)
+	data, err := json.MarshalIndent(state, "", "  ")
+	if err != nil {
+		log.Printf("[ERROR] Error serializando estado de tienda: %v", err)
+		return
+	}
+
+	tmpFile := "data/store_state.json.tmp"
+	if err := os.WriteFile(tmpFile, data, 0644); err != nil {
+		log.Printf("[ERROR] Error escribiendo archivo temporal de tienda: %v", err)
+		return
+	}
+	_ = os.Rename(tmpFile, "data/store_state.json")
+}
+
+func (m *MemoryStore) loadFromFile() bool {
+	data, err := os.ReadFile("data/store_state.json")
+	if err != nil {
+		return false
+	}
+
+	var state StoreState
+	if err := json.Unmarshal(data, &state); err != nil {
+		log.Printf("[ERROR] Error deserializando estado de tienda: %v", err)
+		return false
+	}
+
+	if state.Users != nil && len(state.Users) > 0 {
+		m.users = state.Users
+	}
+	if state.Vehicles != nil && len(state.Vehicles) > 0 {
+		m.vehicles = state.Vehicles
+	}
+	if state.Drivers != nil && len(state.Drivers) > 0 {
+		m.drivers = state.Drivers
+	}
+	if state.Journeys != nil && len(state.Journeys) > 0 {
+		m.journeys = state.Journeys
+	}
+	if state.GPSPoints != nil && len(state.GPSPoints) > 0 {
+		m.gpsPoints = state.GPSPoints
+	}
+	if state.Photos != nil && len(state.Photos) > 0 {
+		m.photos = state.Photos
+	}
+	if state.Geofences != nil && len(state.Geofences) > 0 {
+		m.geofences = state.Geofences
+	}
+	if state.NextUserID > 0 {
+		m.nextUserID = state.NextUserID
+	}
+	if state.NextVehID > 0 {
+		m.nextVehID = state.NextVehID
+	}
+	if state.NextDriverID > 0 {
+		m.nextDriverID = state.NextDriverID
+	}
+	if state.NextJournID > 0 {
+		m.nextJournID = state.NextJournID
+	}
+	if state.NextGeofenceID > 0 {
+		m.nextGeofenceID = state.NextGeofenceID
+	}
+
+	log.Printf("[STORE] Estado restaurado desde data/store_state.json (%d usuarios, %d recorridos, %d geocercas)", len(m.users), len(m.journeys), len(m.geofences))
+	return true
+}
+
 func NewMemoryStore() *MemoryStore {
 	store := &MemoryStore{
 		users:          make(map[int]*models.User),
@@ -91,6 +192,12 @@ func NewMemoryStore() *MemoryStore {
 	}
 
 	store.seedData()
+	if store.loadFromFile() {
+		log.Println("[STORE] Base de datos persistente restaurada exitosamente desde disco.")
+	} else {
+		log.Println("[STORE] Inicializando archivo de base de datos persistente...")
+		store.saveToFileLocked()
+	}
 	return store
 }
 
@@ -550,6 +657,7 @@ func (m *MemoryStore) CreateUser(ctx context.Context, u *models.User, password s
 		m.nextDriverID++
 	}
 
+	m.saveToFileLocked()
 	return nil
 }
 
@@ -643,6 +751,7 @@ func (m *MemoryStore) UpdateUser(ctx context.Context, id int, req *models.Update
 		}
 	}
 
+	m.saveToFileLocked()
 	return u, nil
 }
 
@@ -663,6 +772,7 @@ func (m *MemoryStore) DeleteUser(ctx context.Context, id int) error {
 		}
 	}
 
+	m.saveToFileLocked()
 	return nil
 }
 
@@ -677,6 +787,7 @@ func (m *MemoryStore) ToggleUserStatus(ctx context.Context, userID int, active b
 
 	u.Active = active
 	u.UpdatedAt = time.Now()
+	m.saveToFileLocked()
 	return nil
 }
 
@@ -718,6 +829,7 @@ func (m *MemoryStore) CreateVehicle(ctx context.Context, v *models.Vehicle) erro
 	v.UpdatedAt = time.Now()
 
 	m.vehicles[v.ID] = v
+	m.saveToFileLocked()
 	return nil
 }
 
@@ -728,6 +840,7 @@ func (m *MemoryStore) UpdateVehicleKM(ctx context.Context, id int, newKM float64
 	if v, ok := m.vehicles[id]; ok {
 		v.CurrentKM = newKM
 		v.UpdatedAt = time.Now()
+		m.saveToFileLocked()
 		return nil
 	}
 	return errors.New("vehículo no encontrado")
@@ -754,6 +867,7 @@ func (m *MemoryStore) CreateDriver(ctx context.Context, d *models.Driver) error 
 	d.UpdatedAt = time.Now()
 
 	m.drivers[d.ID] = d
+	m.saveToFileLocked()
 	return nil
 }
 
@@ -787,6 +901,7 @@ func (m *MemoryStore) CreateJourney(ctx context.Context, j *models.Journey) erro
 	}
 
 	m.journeys[j.ID] = j
+	m.saveToFileLocked()
 	return nil
 }
 
@@ -889,6 +1004,7 @@ func (m *MemoryStore) CreateGeofence(ctx context.Context, g *models.Geofence) er
 	g.CreatedAt = time.Now()
 
 	m.geofences[g.ID] = g
+	m.saveToFileLocked()
 	return nil
 }
 
@@ -920,6 +1036,7 @@ func (m *MemoryStore) AddGPSPoints(ctx context.Context, points []models.GPSPoint
 			}
 		}
 	}
+	m.saveToFileLocked()
 	return nil
 }
 
@@ -958,6 +1075,7 @@ func (m *MemoryStore) FinishJourney(ctx context.Context, j *models.Journey) erro
 		}
 	}
 
+	m.saveToFileLocked()
 	return nil
 }
 
@@ -977,6 +1095,7 @@ func (m *MemoryStore) ValidateJourney(ctx context.Context, id int, status string
 	j.ValidatedBy = &validatorID
 	j.UpdatedAt = now
 
+	m.saveToFileLocked()
 	return nil
 }
 
@@ -985,6 +1104,7 @@ func (m *MemoryStore) AddPhoto(ctx context.Context, photo *models.Photo) error {
 	defer m.mu.Unlock()
 
 	m.photos[photo.JourneyID] = append(m.photos[photo.JourneyID], *photo)
+	m.saveToFileLocked()
 	return nil
 }
 
