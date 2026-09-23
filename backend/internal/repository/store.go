@@ -422,9 +422,25 @@ func (m *MemoryStore) seedData() {
 
 	v1 := &models.Vehicle{
 		ID:          1,
-		PlateNumber: "TF-101-AB",
+		PlateNumber: "02-28947-E",
+		Brand:       "AKT",
+		Model:       "Hunter (BLOKON)",
+		Year:        2023,
+		VehicleType: models.VehicleTypeMoto,
+		SubsidyRate: models.RateMotoPerKM, // 6.0 C$/km
+		InitialKM:   0.0,
+		CurrentKM:   0.0,
+		Status:      "active",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+	m.vehicles[1] = v1
+
+	v2 := &models.Vehicle{
+		ID:          2,
+		PlateNumber: "M 010311",
 		Brand:       "Toyota",
-		Model:       "Hilux 4x4",
+		Model:       "Carro (BLOKON)",
 		Year:        2022,
 		VehicleType: models.VehicleTypeAuto,
 		SubsidyRate: models.RateAutoPerKM, // 10.0 C$/km
@@ -434,10 +450,218 @@ func (m *MemoryStore) seedData() {
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 	}
-	m.vehicles[1] = v1
+	m.vehicles[2] = v2
 
-	v2 := &models.Vehicle{
-		ID:          2,
+	v3 := &models.Vehicle{
+		ID:          3,
+		PlateNumber: "M 466 963",
+		Brand:       "Hyundai",
+		Model:       "Sedán (CONASER)",
+		Year:        2023,
+		VehicleType: models.VehicleTypeAuto,
+		SubsidyRate: models.RateAutoPerKM, // 10.0 C$/km
+		InitialKM:   25000.0,
+		CurrentKM:   25000.0,
+		Status:      "active",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+	m.vehicles[3] = v3
+
+	v4 := &models.Vehicle{
+		ID:          4,
+		PlateNumber: "M 352 570",
+		Brand:       "Genesis",
+		Model:       "Moto (CONASER)",
+		Year:        2023,
+		VehicleType: models.VehicleTypeMoto,
+		SubsidyRate: models.RateMotoPerKM, // 6.0 C$/km
+		InitialKM:   0.0,
+		CurrentKM:   0.0,
+		Status:      "active",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+	m.vehicles[4] = v4
+
+	v5 := &models.Vehicle{
+		ID:          5,
+		PlateNumber: "M 325287",
+		Brand:       "Mazda",
+		Model:       "Camioneta (CONASER)",
+		Year:        2022,
+		VehicleType: models.VehicleTypeAuto,
+		SubsidyRate: models.RateAutoPerKM, // 10.0 C$/km
+		InitialKM:   30000.0,
+		CurrentKM:   30000.0,
+		Status:      "active",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+	m.vehicles[5] = v5
+
+	v6 := &models.Vehicle{
+		ID:          6,
+		PlateNumber: "244597",
+		Brand:       "Pulsar",
+		Model:       "Motocicleta (CONASER)",
+		Year:        2023,
+		VehicleType: models.VehicleTypeMoto,
+		SubsidyRate: models.RateMotoPerKM, // 6.0 C$/km
+		InitialKM:   0.0,
+		CurrentKM:   0.0,
+		Status:      "active",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+	m.vehicles[6] = v6
+
+	v7 := &models.Vehicle{
+		ID:          7,
+		PlateNumber: "M 193 433",
+		Brand:       "Genesis",
+		Model:       "Moto (CONASER)",
+		Year:        2023,
+		VehicleType: models.VehicleTypeMoto,
+		SubsidyRate: models.RateMotoPerKM, // 6.0 C$/km
+		InitialKM:   0.0,
+		CurrentKM:   0.0,
+		Status:      "active",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+	m.vehicles[7] = v7
+
+	v8 := &models.Vehicle{
+		ID:          8,
+		PlateNumber: "M 161 143",
+		Brand:       "AKT 150",
+		Model:       "Moto (CONASER)",
+		Year:        2023,
+		VehicleType: models.VehicleTypeMoto,
+		SubsidyRate: models.RateMotoPerKM, // 6.0 C$/km
+		InitialKM:   0.0,
+		CurrentKM:   0.0,
+		Status:      "active",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+	m.vehicles[8] = v8
+
+	v9 := &models.Vehicle{
+		ID:          9,
+		PlateNumber: "M 329907",
+		Brand:       "Genesis",
+		Model:       "Moto (SECURITY)",
+		Year:        2023,
+		VehicleType: models.VehicleTypeMoto,
+		SubsidyRate: models.RateMotoPerKM, // 6.0 C$/km
+		InitialKM:   0.0,
+		CurrentKM:   0.0,
+		Status:      "active",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+	m.vehicles[9] = v9
+
+	v10 := &models.Vehicle{
+		ID:          10,
+		PlateNumber: "M-160829",
+		Brand:       "AKT",
+		Model:       "Moto (SECURITY)",
+		Year:        2023,
+		VehicleType: models.VehicleTypeMoto,
+		SubsidyRate: models.RateMotoPerKM, // 6.0 C$/km
+		InitialKM:   0.0,
+		CurrentKM:   0.0,
+		Status:      "active",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+	m.vehicles[10] = v10
+
+	v11 := &models.Vehicle{
+		ID:          11,
+		PlateNumber: "M35036",
+		Brand:       "Kia",
+		Model:       "Rio Sedán (SECURITY)",
+		Year:        2022,
+		VehicleType: models.VehicleTypeAuto,
+		SubsidyRate: models.RateAutoPerKM, // 10.0 C$/km
+		InitialKM:   20000.0,
+		CurrentKM:   20000.0,
+		Status:      "active",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+	m.vehicles[11] = v11
+
+	v12 := &models.Vehicle{
+		ID:          12,
+		PlateNumber: "M 160 461",
+		Brand:       "Sky Go",
+		Model:       "Motocicleta (SECURITY)",
+		Year:        2023,
+		VehicleType: models.VehicleTypeMoto,
+		SubsidyRate: models.RateMotoPerKM, // 6.0 C$/km
+		InitialKM:   0.0,
+		CurrentKM:   0.0,
+		Status:      "active",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+	m.vehicles[12] = v12
+
+	v13 := &models.Vehicle{
+		ID:          13,
+		PlateNumber: "M 16047",
+		Brand:       "Dayun",
+		Model:       "Moto (SECURITY)",
+		Year:        2023,
+		VehicleType: models.VehicleTypeMoto,
+		SubsidyRate: models.RateMotoPerKM, // 6.0 C$/km
+		InitialKM:   0.0,
+		CurrentKM:   0.0,
+		Status:      "active",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+	m.vehicles[13] = v13
+
+	v14 := &models.Vehicle{
+		ID:          14,
+		PlateNumber: "M 384-625",
+		Brand:       "KA Genesis",
+		Model:       "Motocicleta (SECURITY)",
+		Year:        2023,
+		VehicleType: models.VehicleTypeMoto,
+		SubsidyRate: models.RateMotoPerKM, // 6.0 C$/km
+		InitialKM:   0.0,
+		CurrentKM:   0.0,
+		Status:      "active",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+	m.vehicles[14] = v14
+
+	v15 := &models.Vehicle{
+		ID:          15,
+		PlateNumber: "M-325551",
+		Brand:       "Boxer",
+		Model:       "Moto (SECURITY)",
+		Year:        2023,
+		VehicleType: models.VehicleTypeMoto,
+		SubsidyRate: models.RateMotoPerKM, // 6.0 C$/km
+		InitialKM:   0.0,
+		CurrentKM:   0.0,
+		Status:      "active",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+	m.vehicles[15] = v15
+
+	v16 := &models.Vehicle{
+		ID:          16,
 		PlateNumber: "MOTO-808-NI",
 		Brand:       "Yamaha",
 		Model:       "FZ-25 250cc",
@@ -450,24 +674,8 @@ func (m *MemoryStore) seedData() {
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 	}
-	m.vehicles[2] = v2
-
-	v3 := &models.Vehicle{
-		ID:          3,
-		PlateNumber: "TF-303-EF",
-		Brand:       "Isuzu",
-		Model:       "D-Max",
-		Year:        2021,
-		VehicleType: models.VehicleTypeAuto,
-		SubsidyRate: models.RateAutoPerKM, // 10.0 C$/km
-		InitialKM:   45000.0,
-		CurrentKM:   62100.0,
-		Status:      "maintenance",
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
-	}
-	m.vehicles[3] = v3
-	m.nextVehID = 4
+	m.vehicles[16] = v16
+	m.nextVehID = 17
 
 	// Seed Geofences in Nicaragua
 	g1 := &models.Geofence{
