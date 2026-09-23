@@ -95,31 +95,32 @@ $$ \text{Diferencia (KM)} = \text{KM Odómetro Decl.} - \text{KM GPS Real} $$
 
 1. **Dashboard Financiero (`/dashboard`)**:
    * KPIs en Córdobas (`C$`), tarjetas de vehículos activos, odómetros y alertas de discrepancia.
-2. **Gestión de Vehículos (`/vehicles`)**:
+2. **Gestión de Vehículos y Precarga de Flota (`/vehicles`)**:
    * Registro con asignación de categoría (*Auto 10 C$/km* o *Moto 6 C$/km*) y acumulación de kilometraje y subsidio por vehículo.
+   * Catálogo precargado de 15 vehículos oficiales de las empresas **BLOKON**, **CONASER** y **NEW CENTURY SECURITY**.
 3. **Gestión de Conductores (`/drivers`)**:
    * Control de licencias, teléfonos y estado de conductores asignados.
 4. **Monitoreo y Validación con Mapa GPS (`/journeys`)**:
-   * Tabla interactiva de trayectos.
+   * Tabla interactiva de trayectos y capa de persistencia atómica en `data/store_state.json`.
    * **Mapa Interactivo (Leaflet Dark Matter)** con Marcador de Origen (🟢 Verde), Destino (🔴 Rojo) y Trazado de Ruta GPS Real siguiendo carreteras principales de Nicaragua (NIC-1 y NIC-12).
    * Modal de Auditoría con evidencia fotográfica del odómetro.
-5. **Gestión de Usuarios y Seguridad (`/users`)**:
+5. **Gestión de Usuarios y Enrolamiento por Código de 6 Dígitos (`/users`)**:
    * Tabla de usuarios con modales interactivas para Crear, Editar, Cambiar Clave, Desactivar y Eliminar.
-6. **Reportería de Subsidio y Cortes 2026 (`/reports`)**:
+   * **Sistema de Activación de Dispositivos (`KeyRound`)**: Generación de códigos temporales de 6 dígitos (expiración a 30 min) para vincular celulares de conductores sin contraseña.
+6. **Reportería de Subsidio, Cortes 2026 y Bloques de Firma (`/reports`)**:
    * Selector dinámico para alternar entre los **24 Cortes Quincenales de 2026** o el **Acumulado General**.
    * Tabla de liquidación técnica detallada por **Nombres de Conductores**.
+   * **Bloques Institucionales de Firma en PDF**: Secciones "ELABORADO POR (COLABORADOR)", "REVISADO Y AUDITADO POR" y "AUTORIZADO PARA PAGO".
    * **Exportación Nativa a Excel (`.xlsx`)** con 3 hojas de trabajo (*Desglose Conductores*, *Resumen por Categoría*, *Calendario Cortes 2026*) y exportador CSV.
 7. **Aplicación Móvil Android Nativa y PWA (`/mobile`)**:
    * Registro de recorrido con captura de odómetro, geolocalización GPS y cámara.
-   * Integración del **Logo Oficial TrackFleet360** (icono de app launcher Android + imagen de marca en todas las pantallas) y firma **`Powered by Newcentury`** en los pies de página.
-   * Compilación de ejecutable nativo `.apk` en el entorno local de la Mac (`mobile/build/app/outputs/flutter-apk/app-debug.apk`).
-   * Integración con GitHub Actions para despliegue automatizado en la nube.
+   * Integración de inicio de sesión y enrolamiento directo mediante **código numérico de 6 dígitos**.
+   * Compilación de ejecutable nativo release APK (`mobile/TrackFleet360-Conductor-Traccar.apk` - 49.2 MB).
+   * Integración con GitHub para despliegue automatizado en la nube (`main`).
 
 ---
 
 ## 6. ⚠️ Inconvenientes Técnicos Encontrados y Soluciones Aplicadas
-
-Este listado detalla los desafíos técnicos encontrados durante el desarrollo para que cualquier agente o desarrollador que continúe el proyecto conozca las decisiones de arquitectura:
 
 | # | Inconveniente / Desafío | Causa Raíz | Solución Implementada |
 | :-: | :--- | :--- | :--- |
@@ -133,6 +134,8 @@ Este listado detalla los desafíos técnicos encontrados durante el desarrollo p
 | **8** | **Falta de Android SDK y Java JDK** | La compilación nativa `.apk` fallaba por la ausencia de compilador Android y motor Java en la Mac. | Se instaló `android-commandlinetools` via Homebrew, se descargó **OpenJDK 17** en `/Users/informatica/jdk-17` y se configuró Android SDK API 34 en `/Users/informatica/Library/Android/sdk`. |
 | **9** | **Error Gradle D8 Dexing (`mergeExtDexDebug`)** | `play-services-location:21.2.0` de `geolocator` provocaba errores de desugaring en la tarea D8 con `minSdkVersion 21`. | Se actualizó a AGP 8.1.0, Gradle 8.2, Java 17, `minSdkVersion 24` y `multiDexEnabled true` en `android/app/build.gradle`. |
 | **10** | **Lentitud/Timeout en Login desde Celular Físico** | El servicio `ApiService` apuntaba a `10.0.2.2:8080` (exclusivo de emulador). En un teléfono real provocaba 5s de retardo por timeout, además de faltar el permiso de tráfico HTTP claro. | Se cambió `baseUrl` a la IP de la Mac en la red Wi-Fi `http://192.168.6.123:8085/api/v1` y se habilitó `android:usesCleartextTraffic="true"` en `AndroidManifest.xml` logrando login instantáneo (<100ms). |
+| **11** | **Permisos de Motor Flutter en Sandbox** | Durante el build `flutter build apk --release`, la actualización del motor en `/usr/local/share/flutter` producía `Operation not permitted`. | Se ejecutó la compilación con elevación `BypassSandbox` y se generó el binario de release exitosamente (`app-release.apk`). |
+| **12** | **Formato Institucional de PDF de Liquidación** | Los reportes PDF requerían firmas oficiales para validación contable y de pago. | Se añadieron 3 bloques estándar de firmas al final del generador PDF (`pdfReport.ts`): Elaborado por, Revisado y Auditado por, y Autorizado para Pago. |
 
 ---
 
@@ -150,20 +153,20 @@ cd /Users/informatica/Documents/TrackFleet360/frontend
 npx next start -p 3005
 ```
 
-### Compilación Móvil Android (Local):
+### Compilación Móvil Android (Release APK):
 ```bash
 cd /Users/informatica/Documents/TrackFleet360/mobile
-export JAVA_HOME=/Users/informatica/jdk-17/Contents/Home
-export PATH="$JAVA_HOME/bin:$PATH"
-/Users/informatica/flutter/bin/flutter build apk --debug
+flutter build apk --release
+cp build/app/outputs/flutter-apk/app-release.apk TrackFleet360-Conductor-Traccar.apk
 ```
-* **Ubicación del APK producido**: `mobile/build/app/outputs/flutter-apk/app-debug.apk`
+* **Ubicación del APK producido**: [`mobile/TrackFleet360-Conductor-Traccar.apk`](file:///Users/informatica/Documents/TrackFleet360/mobile/TrackFleet360-Conductor-Traccar.apk)
 
 ---
 
 ## 8. 🔑 Credenciales y Rutas de Prueba
 
-* **Repositorio GitHub**: `https://github.com/Marktuay/TrackFleet360.git`
+* **Repositorio GitHub**: `https://github.com/Marktuay/TrackFleet360.git` (Rama `main`)
 * **Acceso Web Admin/Supervisor**: `http://localhost:3005` (o `http://192.168.6.123:3005`)
   * **Usuario Admin**: `admin@trackfleet360.com` / `admin123`
   * **Usuario Conductor**: `conductor@trackfleet360.com` / `driver123`
+
