@@ -58,53 +58,60 @@ type Repository interface {
 	// Geofences
 	ListGeofences(ctx context.Context) ([]models.Geofence, error)
 	CreateGeofence(ctx context.Context, g *models.Geofence) error
+
+	// Device Activation
+	GenerateActivationCode(ctx context.Context, userID int) (*models.DeviceActivationCode, error)
+	ValidateActivationCode(ctx context.Context, code string) (*models.DeviceActivationCode, error)
 }
 
 type MemoryStore struct {
-	mu             sync.RWMutex
-	users          map[int]*models.User
-	vehicles       map[int]*models.Vehicle
-	drivers        map[int]*models.Driver
-	journeys       map[int]*models.Journey
-	gpsPoints      map[int][]models.GPSPoint
-	photos         map[int][]models.Photo
-	geofences      map[int]*models.Geofence
-	nextUserID     int
-	nextVehID      int
-	nextDriverID   int
-	nextJournID    int
-	nextGeofenceID int
+	mu              sync.RWMutex
+	users           map[int]*models.User
+	vehicles        map[int]*models.Vehicle
+	drivers         map[int]*models.Driver
+	journeys        map[int]*models.Journey
+	gpsPoints       map[int][]models.GPSPoint
+	photos          map[int][]models.Photo
+	geofences       map[int]*models.Geofence
+	activationCodes map[string]*models.DeviceActivationCode
+	nextUserID      int
+	nextVehID       int
+	nextDriverID    int
+	nextJournID     int
+	nextGeofenceID  int
 }
 
 type StoreState struct {
-	Users          map[int]*models.User      `json:"users"`
-	Vehicles       map[int]*models.Vehicle   `json:"vehicles"`
-	Drivers        map[int]*models.Driver    `json:"drivers"`
-	Journeys       map[int]*models.Journey   `json:"journeys"`
-	GPSPoints      map[int][]models.GPSPoint `json:"gps_points"`
-	Photos         map[int][]models.Photo    `json:"photos"`
-	Geofences      map[int]*models.Geofence  `json:"geofences"`
-	NextUserID     int                       `json:"next_user_id"`
-	NextVehID      int                       `json:"next_veh_id"`
-	NextDriverID   int                       `json:"next_driver_id"`
-	NextJournID    int                       `json:"next_journ_id"`
-	NextGeofenceID int                       `json:"next_geofence_id"`
+	Users           map[int]*models.User                    `json:"users"`
+	Vehicles        map[int]*models.Vehicle                 `json:"vehicles"`
+	Drivers         map[int]*models.Driver                  `json:"drivers"`
+	Journeys        map[int]*models.Journey                 `json:"journeys"`
+	GPSPoints       map[int][]models.GPSPoint               `json:"gps_points"`
+	Photos          map[int][]models.Photo                  `json:"photos"`
+	Geofences       map[int]*models.Geofence                `json:"geofences"`
+	ActivationCodes map[string]*models.DeviceActivationCode `json:"activation_codes"`
+	NextUserID      int                                     `json:"next_user_id"`
+	NextVehID       int                                     `json:"next_veh_id"`
+	NextDriverID    int                                     `json:"next_driver_id"`
+	NextJournID     int                                     `json:"next_journ_id"`
+	NextGeofenceID  int                                     `json:"next_geofence_id"`
 }
 
 func (m *MemoryStore) saveToFileLocked() {
 	state := StoreState{
-		Users:          m.users,
-		Vehicles:       m.vehicles,
-		Drivers:        m.drivers,
-		Journeys:       m.journeys,
-		GPSPoints:      m.gpsPoints,
-		Photos:         m.photos,
-		Geofences:      m.geofences,
-		NextUserID:     m.nextUserID,
-		NextVehID:      m.nextVehID,
-		NextDriverID:   m.nextDriverID,
-		NextJournID:    m.nextJournID,
-		NextGeofenceID: m.nextGeofenceID,
+		Users:           m.users,
+		Vehicles:        m.vehicles,
+		Drivers:         m.drivers,
+		Journeys:        m.journeys,
+		GPSPoints:       m.gpsPoints,
+		Photos:          m.photos,
+		Geofences:       m.geofences,
+		ActivationCodes: m.activationCodes,
+		NextUserID:      m.nextUserID,
+		NextVehID:       m.nextVehID,
+		NextDriverID:    m.nextDriverID,
+		NextJournID:     m.nextJournID,
+		NextGeofenceID:  m.nextGeofenceID,
 	}
 
 	_ = os.MkdirAll("data", 0755)
@@ -155,6 +162,9 @@ func (m *MemoryStore) loadFromFile() bool {
 	if state.Geofences != nil && len(state.Geofences) > 0 {
 		m.geofences = state.Geofences
 	}
+	if state.ActivationCodes != nil {
+		m.activationCodes = state.ActivationCodes
+	}
 	if state.NextUserID > 0 {
 		m.nextUserID = state.NextUserID
 	}
@@ -177,18 +187,19 @@ func (m *MemoryStore) loadFromFile() bool {
 
 func NewMemoryStore() *MemoryStore {
 	store := &MemoryStore{
-		users:          make(map[int]*models.User),
-		vehicles:       make(map[int]*models.Vehicle),
-		drivers:        make(map[int]*models.Driver),
-		journeys:       make(map[int]*models.Journey),
-		gpsPoints:      make(map[int][]models.GPSPoint),
-		photos:         make(map[int][]models.Photo),
-		geofences:      make(map[int]*models.Geofence),
-		nextUserID:     1,
-		nextVehID:      1,
-		nextDriverID:   1,
-		nextJournID:    1,
-		nextGeofenceID: 1,
+		users:           make(map[int]*models.User),
+		vehicles:        make(map[int]*models.Vehicle),
+		drivers:         make(map[int]*models.Driver),
+		journeys:        make(map[int]*models.Journey),
+		gpsPoints:       make(map[int][]models.GPSPoint),
+		photos:          make(map[int][]models.Photo),
+		geofences:       make(map[int]*models.Geofence),
+		activationCodes: make(map[string]*models.DeviceActivationCode),
+		nextUserID:      1,
+		nextVehID:       1,
+		nextDriverID:    1,
+		nextJournID:     1,
+		nextGeofenceID:  1,
 	}
 
 	store.seedData()
@@ -1345,6 +1356,69 @@ func (m *MemoryStore) GetReportSummary(ctx context.Context, cutoffID int) (*mode
 	summary.DriversBreakdown = driverList
 
 	return summary, nil
+}
+
+func (m *MemoryStore) GenerateActivationCode(ctx context.Context, userID int) (*models.DeviceActivationCode, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	user, ok := m.users[userID]
+	if !ok {
+		return nil, errors.New("usuario no encontrado")
+	}
+
+	driverID := 0
+	for _, d := range m.drivers {
+		if d.UserID == userID {
+			driverID = d.ID
+			break
+		}
+	}
+
+	// Generate random 6-digit code
+	rawVal := time.Now().UnixNano()%900000 + 100000
+	if rawVal < 0 {
+		rawVal = -rawVal
+	}
+	code := fmt.Sprintf("%06d", rawVal%1000000)
+
+	if m.activationCodes == nil {
+		m.activationCodes = make(map[string]*models.DeviceActivationCode)
+	}
+
+	activation := &models.DeviceActivationCode{
+		Code:      code,
+		UserID:    user.ID,
+		DriverID:  driverID,
+		Email:     user.Email,
+		ExpiresAt: time.Now().Add(30 * time.Minute),
+	}
+
+	m.activationCodes[code] = activation
+	m.saveToFileLocked()
+	return activation, nil
+}
+
+func (m *MemoryStore) ValidateActivationCode(ctx context.Context, code string) (*models.DeviceActivationCode, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	cleanCode := strings.TrimSpace(code)
+	act, ok := m.activationCodes[cleanCode]
+	if !ok {
+		return nil, errors.New("código de activación inválido o no encontrado")
+	}
+
+	if time.Now().After(act.ExpiresAt) {
+		delete(m.activationCodes, cleanCode)
+		m.saveToFileLocked()
+		return nil, errors.New("el código de activación ha expirado (duración: 30 minutos)")
+	}
+
+	// Code is valid - consume it (one-time activation)
+	delete(m.activationCodes, cleanCode)
+	m.saveToFileLocked()
+	return act, nil
 }
 
 func ConnectPostgres(connStr string) (*sql.DB, error) {

@@ -703,3 +703,54 @@ func (h *Handler) ExportReportCSV(c *gin.Context) {
 
 	c.String(http.StatusOK, b.String())
 }
+
+// Device Enrolment & Activation Handlers
+func (h *Handler) GenerateActivationCode(c *gin.Context) {
+	var req models.GenerateActivationCodeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	act, err := h.repo.GenerateActivationCode(c.Request.Context(), req.UserID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":    "Código de activación generado exitosamente (Validez: 30 min)",
+		"activation": act,
+	})
+}
+
+func (h *Handler) ActivateDevice(c *gin.Context) {
+	var req models.ActivateDeviceRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	act, err := h.repo.ValidateActivationCode(c.Request.Context(), req.Code)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := h.repo.GetUserByID(c.Request.Context(), act.UserID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Usuario asignado no encontrado"})
+		return
+	}
+
+	token, err := middleware.GenerateToken(user.ID, user.Email, user.Role, act.DriverID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al generar sesión para el dispositivo"})
+		return
+	}
+
+	c.JSON(http.StatusOK, models.LoginResponse{
+		Token: token,
+		User:  *user,
+	})
+}

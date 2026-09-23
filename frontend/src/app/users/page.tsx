@@ -18,11 +18,12 @@ import {
   KeyRound,
   AlertTriangle
 } from 'lucide-react';
-import { apiFetch, User, Driver } from '@/lib/api';
+import { apiFetch, generateActivationCode, User, Driver } from '@/lib/api';
 import AuthGuard from '@/components/auth/AuthGuard';
 
 export default function UsersPage() {
   const [mounted, setMounted] = useState(false);
+  const [activationCodeModal, setActivationCodeModal] = useState<{ code: string; user: User; expires_at: string } | null>(null);
   const [users, setUsers] = useState<User[]>([
     { id: 1, email: 'admin@trackfleet360.com', full_name: 'Carlos Administrator', role: 'admin', active: true },
     { id: 2, email: 'supervisor@trackfleet360.com', full_name: 'Maria Supervisor', role: 'supervisor', active: true },
@@ -210,6 +211,22 @@ export default function UsersPage() {
     }
   };
 
+  const handleGenerateActivationCode = async (user: User) => {
+    setErrorMsg('');
+    setSuccessMsg('');
+    try {
+      const res = await generateActivationCode(user.id);
+      const expTime = new Date(res.activation.expires_at).toLocaleTimeString('es-NI', { hour: '2-digit', minute: '2-digit' });
+      setActivationCodeModal({
+        code: res.activation.code,
+        user: user,
+        expires_at: expTime,
+      });
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Error al generar código de activación');
+    }
+  };
+
   const toggleUserStatus = async (user: User) => {
     const newStatus = !user.active;
     try {
@@ -370,6 +387,15 @@ export default function UsersPage() {
                             }`}
                           >
                             {u.active ? 'Bloquear' : 'Activar'}
+                          </button>
+
+                          {/* Generate 6-Digit Mobile Activation Code */}
+                          <button
+                            onClick={() => handleGenerateActivationCode(u)}
+                            title="Generar Código de Activación de 6 Dígitos para la App Móvil"
+                            className="p-1.5 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/30 hover:bg-purple-500/20 transition-colors"
+                          >
+                            <KeyRound className="w-4 h-4" />
                           </button>
 
                           {/* Edit User */}
@@ -899,6 +925,43 @@ export default function UsersPage() {
                     {isSubmitting ? 'Eliminando...' : 'Sí, Eliminar Cuenta'}
                   </button>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modal: Display 6-Digit Mobile Enrolment Code */}
+          {activationCodeModal && (
+            <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="glass-panel w-full max-w-md p-6 space-y-5 text-center relative border-purple-500/40">
+                <div className="mx-auto w-12 h-12 bg-purple-500/20 text-purple-400 rounded-2xl flex items-center justify-center">
+                  <KeyRound className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white text-lg">Código de Activación Móvil</h3>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Entrega este código de 6 dígitos al colaborador para enrolar su dispositivo en la App Móvil.
+                  </p>
+                </div>
+
+                <div className="bg-slate-900/90 border border-purple-500/40 rounded-2xl p-5 my-3">
+                  <div className="text-xs font-semibold text-purple-400 uppercase tracking-widest mb-1.5">
+                    Código ({activationCodeModal.user.full_name})
+                  </div>
+                  <div className="text-4xl font-extrabold text-white tracking-widest font-mono select-all">
+                    {activationCodeModal.code}
+                  </div>
+                  <div className="text-[11px] text-slate-400 mt-2.5">
+                    ⏰ Válido por 30 minutos (Expira a las {activationCodeModal.expires_at})
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setActivationCodeModal(null)}
+                  className="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold py-2.5 rounded-xl text-xs transition-colors shadow-lg shadow-purple-600/20"
+                >
+                  Entendido / Cerrar
+                </button>
               </div>
             </div>
           )}

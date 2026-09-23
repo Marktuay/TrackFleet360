@@ -51,6 +51,7 @@ func main() {
 	{
 		// Public Auth & Hardware Telemetry Ingest
 		v1.POST("/auth/login", h.Login)
+		v1.POST("/auth/activate-device", h.ActivateDevice)
 		v1.POST("/gps/ingest", h.IngestTelemetry)
 
 		// Protected Routes
@@ -88,6 +89,7 @@ func main() {
 				supervisor.POST("/journeys/:id/validate", h.ValidateJourney)
 				supervisor.GET("/reports/summary", h.GetReportSummary)
 				supervisor.GET("/reports/export", h.ExportReportCSV)
+				supervisor.POST("/devices/generate-code", h.GenerateActivationCode)
 			}
 		}
 	}

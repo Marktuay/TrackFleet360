@@ -221,3 +221,25 @@ export function getExportReportCSVUrl(cutoffId?: number): string {
   const param = cutoffId ? `?cutoff_id=${cutoffId}` : '';
   return `${API_URL}/reports/export${param}`;
 }
+
+export interface DeviceActivationCode {
+  code: string;
+  user_id: number;
+  driver_id: number;
+  email: string;
+  expires_at: string;
+}
+
+export async function generateActivationCode(userId: number): Promise<{ message: string; activation: DeviceActivationCode }> {
+  return apiFetch('/devices/generate-code', {
+    method: 'POST',
+    body: JSON.stringify({ user_id: userId }),
+  });
+}
+
+export async function activateDeviceWithCode(code: string): Promise<{ token: string; user: User }> {
+  return apiFetch('/auth/activate-device', {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+  });
+}

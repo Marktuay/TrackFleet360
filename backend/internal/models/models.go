@@ -279,3 +279,21 @@ type ReportSummary struct {
 	TotalSubsidyPayout float64                `json:"total_subsidy_payout"`
 	DriversBreakdown   []DriverSubsidySummary `json:"drivers_breakdown"`
 }
+
+// 6-Digit Device Enrolment & Activation DTOs
+type DeviceActivationCode struct {
+	Code      string    `json:"code"`
+	UserID    int       `json:"user_id"`
+	DriverID  int       `json:"driver_id"`
+	Email     string    `json:"email"`
+	ExpiresAt time.Time `json:"expires_at"`
+}
+
+type GenerateActivationCodeRequest struct {
+	UserID int `json:"user_id" binding:"required"`
+}
+
+type ActivateDeviceRequest struct {
+	Code string `json:"code" binding:"required"`
+}
+
